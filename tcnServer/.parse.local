@@ -1,0 +1,10 @@
+{
+  "applications": {
+    "_default": {
+      "link": "tcn-lekki-server"
+    },
+    "tcn-lekki-server": {
+      "applicationId": "Ca2Gq7m6rrg4JZqKfNRbu3qyvdh5b1CTZdSeBmV9"
+    }
+  }
+}
