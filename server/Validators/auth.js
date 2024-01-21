@@ -5,10 +5,14 @@ exports.userSignupValidator = [
         .not()
         .isEmpty()
         .withMessage('Your name is required'),
-    check('age')
+    check('ageGroup')
         .not()
         .isEmpty()
-        .withMessage('Age is required'),
+        .withMessage('Age group is required'),
+    check('birthDay')
+        .not()
+        .isEmpty()
+        .withMessage('Your birthday:(dd/mm) is required'),
     check('gender')
         .not()
         .isEmpty()

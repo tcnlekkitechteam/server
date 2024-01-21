@@ -22,11 +22,19 @@ const userSchema = new mongoose.Schema({
         trim: true,
         required: true,
         enum: ['Male', 'Female', 'Other']
-    },age: {
-        type: Number,
+    },
+    birthDay: {
+        type: String,
         trim: true,
-        required: false,
-        max: 150
+        required: true,
+        max: 11
+    },
+    ageGroup: {
+        type: String,
+        enum: ['Under 18', '18 - 25', '26 - 35', '36 - 45', '46 - 55', '56 and above'],
+        trim: true,
+        required: true,
+        max: 15
     },
     residentialArea: {
         type: String,

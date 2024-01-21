@@ -51,7 +51,7 @@ const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
 exports.signup = async (req, res) => {
     try {
-        const {name, email, phoneNumber, occupation, gender, maritalStatus, dateOfBirth,ageGroup, password} = req.body;
+        const {name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password} = req.body;
 
         const user = await User.findOne({ email });
 
@@ -61,7 +61,7 @@ exports.signup = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ name, email, phoneNumber, occupation, gender, maritalStatus, dateOfBirth,ageGroup, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '10m' });
+        const token = jwt.sign({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '10m' });
 
         const emailData = {
             From: process.env.EMAIL_FROM,
@@ -101,9 +101,9 @@ exports.accountActivation = async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
 
-        const {name, email, phoneNumber, occupation, gender, maritalStatus, dateOfBirth,ageGroup, password } = jwt.decode(token);
+        const {name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password } = jwt.decode(token);
 
-        const user = new User({ name, email, phoneNumber, occupation, gender, maritalStatus, dateOfBirth,ageGroup, password });
+        const user = new User({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password });
 
         const savedUser = await user.save();
 
@@ -194,11 +194,11 @@ exports.signin = async (req, res) => {
 
         // To generate a token and send to user client/user
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        const {_id, name, phoneNumber, occupation, gender, maritalStatus, dateOfBirth,ageGroup, role} = user;
+        const {_id, name, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, role} = user;
 
         return res.json({
             token,
-            user: { _id,name, email, phoneNumber, occupation, gender, maritalStatus, dateOfBirth,ageGroup, role }
+            user: { _id,name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, role }
         });
     } catch (err) {
         console.error('SIGNIN ERROR', err);
