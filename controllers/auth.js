@@ -61,7 +61,7 @@ exports.signup = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '10m' });
+        const token = jwt.sign({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '1440m' });
 
         const emailData = {
             From: process.env.EMAIL_FROM,
@@ -79,12 +79,12 @@ exports.signup = async (req, res) => {
         const sent = await client.sendEmail(emailData);
 
         return res.json({
-            message: `Email has been sent to ${email}. Follow the instruction to activate your account`,
+            message: `Email has been sent to ${email}. Follow the instruction to activate your account.`,
         });
     } catch (err) {
         console.error('SIGNUP ERROR', err);
         return res.status(500).json({
-            error: 'Internal Server Error',
+            error: 'Internal Server Error. Please try again later.',
         });
     }
 };
@@ -95,32 +95,32 @@ exports.accountActivation = async (req, res) => {
 
         if (!token) {
             return res.json({
-                message: 'Something went wrong, please try again.'
+                message: 'Something went wrong, please try again.',
             });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
 
-        const {name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password } = jwt.decode(token);
+        const {name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password } = decoded;
 
         const user = new User({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password });
 
         const savedUser = await user.save();
 
-        res.json({
-            message: 'Signup successful. You can sign in now.',
+        return res.json({
+            message: 'Signup successful. You can now sign in.',
             user: savedUser,
         });
     } catch (error) {
         console.error('Account Activation Error:', error);
 
         if (error.name === 'TokenExpiredError') {
-            res.status(401).json({
+            return res.status(401).json({
                 error: 'Sorry, the link has expired. Kindly signup again'
             });
         } else {
-            res.status(401).json({
-                error: 'Error during account activation. Try signup again.'
+            return res.status(401).json({
+                error: 'Error during account activation. Please sign up again.',
             });
         }
     }
