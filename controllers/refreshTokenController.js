@@ -1,6 +1,6 @@
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
-const { getUserAuthPayload } = require("../utility/getUserAuthPayload");
+const { getUserAuthPayload } = require("../utils/getUserAuthPayload");
 
 const handleRefreshToken = async (req, res) => {
   const cookies = req.cookies;

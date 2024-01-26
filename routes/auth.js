@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // import controller 
-const { signup, accountActivation, signin, updateUser, deleteUser } = require('../controllers/auth');
+const { signup, accountActivation, signin, updateUser, forgotPassword, deleteUser } = require('../controllers/auth');
 
 // import validators
 const {userSignupValidator, userSigninValidator, userUpdateValidator,} = require('../Validators/auth');
@@ -13,5 +13,6 @@ router.post('/account-activation', accountActivation);
 router.post('/signin', userSigninValidator, runValidation, signin);
 router.put('/update-user/:userId', userUpdateValidator, runValidation, updateUser);
 router.delete('/user/:userId', deleteUser);
+router.post('/forgot-password', forgotPassword);
 
 module.exports = router; 
