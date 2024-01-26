@@ -250,18 +250,6 @@ exports.signin = async (req, res) => {
       }
     );
 
-    const {
-      userId,
-      name,
-      phoneNumber,
-      birthDay,
-      ageGroup,
-      occupation,
-      gender,
-      maritalStatus,
-      role,
-    } = user;
-
     const refreshToken = jwt.sign(
       { name: user.name },
       process.env.REFRESH_TOKEN_SECRET,
@@ -275,8 +263,8 @@ exports.signin = async (req, res) => {
     // Creates Secure Cookie with refresh token
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      // secure: true,
-      // sameSite: "None",
+      secure: true,
+      sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
