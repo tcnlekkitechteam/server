@@ -61,7 +61,7 @@ exports.signup = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '1440m' });
+        const token = jwt.sign({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '10m' });
 
         const emailData = {
             From: process.env.EMAIL_FROM,
@@ -79,12 +79,12 @@ exports.signup = async (req, res) => {
         const sent = await client.sendEmail(emailData);
 
         return res.json({
-            message: `Email has been sent to ${email}. Follow the instruction to activate your account.`,
+            message: `Email has been sent to ${email}. Follow the instruction to activate your account`,
         });
     } catch (err) {
         console.error('SIGNUP ERROR', err);
         return res.status(500).json({
-            error: 'Internal Server Error. Please try again later.',
+            error: 'Internal Server Error',
         });
     }
 };
@@ -95,32 +95,32 @@ exports.accountActivation = async (req, res) => {
 
         if (!token) {
             return res.json({
-                message: 'Something went wrong, please try again.',
+                message: 'Something went wrong, please try again.'
             });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
 
-        const {name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password } = decoded;
+        const {name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password } = jwt.decode(token);
 
         const user = new User({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password });
 
         const savedUser = await user.save();
 
-        return res.json({
-            message: 'Signup successful. You can now sign in.',
+        res.json({
+            message: 'Signup successful. You can sign in now.',
             user: savedUser,
         });
     } catch (error) {
         console.error('Account Activation Error:', error);
 
         if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({
+            res.status(401).json({
                 error: 'Sorry, the link has expired. Kindly signup again'
             });
         } else {
-            return res.status(401).json({
-                error: 'Error during account activation. Please sign up again.',
+            res.status(401).json({
+                error: 'Error during account activation. Try signup again.'
             });
         }
     }
@@ -193,12 +193,12 @@ exports.signin = async (req, res) => {
         }
 
         // To generate a token and send to user client/user
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        const {_id, name, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, role} = user;
+        const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const {userId, name, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, role} = user;
 
         return res.json({
             token,
-            user: { _id,name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, role }
+            user: { userId,name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, role }
         });
     } catch (err) {
         console.error('SIGNIN ERROR', err);
@@ -208,6 +208,66 @@ exports.signin = async (req, res) => {
     }
 };
 
+// New function for updating user details
+exports.updateUser = async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const userDataToUpdate = req.body;
+  
+      // Check if the user exists
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({
+          error: 'User not found',
+        });
+      }
+  
+      // Update user details
+      const updatedUser = await User.findByIdAndUpdate(userId, userDataToUpdate, { new: true });
+  
+      // Return the updated user
+      return res.json({
+        message: 'User details updated successfully',
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error('UPDATE USER ERROR', error);
+      return res.status(500).json({
+        error: 'Internal Server Error',
+      });
+    }
+  };
+
+
+// To delete a user
+exports.deleteUser = async (req, res) => {
+    try {
+        // Extract user ID from the request parameters
+        const userId = req.params.userId;
+
+        // Check if the user exists
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        // Delete the user
+        await User.deleteOne({_id: userId});
+
+        return res.json({
+            message: 'User has been deleted successfully'
+        });
+    } catch (err) {
+        console.error('DELETE USER ERROR', err);
+        res.status(500).json({
+            error: 'Internal Server Error'
+        });
+    }
+};
 
 
 
@@ -225,11 +285,11 @@ exports.signin = async (req, res) => {
 //         })
 //     }
 //     // To generate a token and send to user client/user
-//     const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
-//     const {_id, firstname, email, role} = user
+//     const token = jwt.sign({userId: user.userId}, process.env.JWT_SECRET, {expiresIn: '7d'});
+//     const {userId, firstname, email, role} = user
 
 //     return res.json({
 //         token,
-//         user: {_id, firstname, email, role}
+//         user: {userId, firstname, email, role}
 //     });
 // })
