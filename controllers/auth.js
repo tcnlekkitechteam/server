@@ -1,51 +1,8 @@
-// const User = require('../models/user');
-// const jwt = require('jsonwebtoken');
-// const sgMail = require('@sendgrid/mail'); 
-
-// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-
-
-//  exports.signup = (req, res) => {
-//     //console.log('REQ BODY ON SIGNUP', req.body);
-//     const {firstname, email, password} = req.body
-
-//     User.findOne({ email })
-//     .then(user => {
-//         if (user) {
-//             return res.status(400).json({
-//                 error: 'We are sorry, Email is taken. Kindly signup using another email'
-//             });
-//         }
-//     })
-//     .catch(err => {
-//         // Handle any errors that occurred during the query
-//         // For example, you might log the error or send a 500 response
-//         console.error(err);
-//         res.status(500).json({
-//             error: 'Internal Server Error'
-//         });
-//     });
-
-//     let newUser = new User({firstname, email, password})
-
-//     newUser.save()
-//     .then(success => {
-//         res.json({
-//             message: 'Thank you for registering as a member of TCN Lekki. At The Covenant Nation, you never walk alone.'
-//         });
-//     })
-//     .catch(err => {
-//         console.log('SIGNUP ERROR', err);
-//         res.status(400).json({
-//             error: err
-//         });
-//     });
-// };
-
+const crypto = require('crypto');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const postmark = require('postmark');
+const { sendResetPasswordEmail } = require('../utils/email');
 
 const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
@@ -61,7 +18,7 @@ exports.signup = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '10m' });
+        const token = jwt.sign({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '3600m' });
 
         const emailData = {
             From: process.env.EMAIL_FROM,
@@ -107,7 +64,7 @@ exports.accountActivation = async (req, res) => {
 
         const savedUser = await user.save();
 
-        res.json({
+        res.status(201).json({
             message: 'Signup successful. You can sign in now.',
             user: savedUser,
         });
@@ -120,55 +77,11 @@ exports.accountActivation = async (req, res) => {
             });
         } else {
             res.status(401).json({
-                error: 'Error during account activation. Try signup again.'
+                error: 'Error during account activation. Try signup again.',
             });
         }
     }
 };
-
-// exports.accountActivation = (req, res) => {
-//     const {token} = req.body
-
-//     if(token) {
-//         jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION, function(err, decoded){
-//             if(err) {
-//                 console.log('JWT VERIFY IN ACCOUNT ACTIVATION ERROR', err)
-//                 return res.status(401).json({
-//                     error: 'Expired link. Kindly signup again'
-//                 })
-//             }
-//             const {firstname, email, password} = jwt.decode(token);
-
-//             const user = new User({firstname, email, password});
-
-//             user.save((err, user) => {
-//                if(err) {
-//                 console.log('SAVE USER IN ACCOUNT ACTIVATION ERROR', err)
-//                 return res.status(401).json({
-//                     error: 'Error saving user in database. Try signup again'
-//                    });
-//             } 
-//                return res.json({
-//                 message: 'Signup success. You can sign in now.'
-//                })
-//             } )
-//         })
-//     } else {return res.json({
-//         message: 'Something went wrong, please try again.'
-//        })}
-// };
-
-/**
- * Check if user is trying to signin but have not signup yet
- * Check if password match with hashed_password that is saved in db
- * If yes, generate token with expiry
- * The token will be sent to client/react
- * It will be used as jwt based authentication system
- * We can allow user to access protected routes later if they have valid token
- * so jwt token is like password with expiry date
- * For successful signin we will send user info and valid token
- * This token will be sent back to the server from client/react to access protected routes subsequently
- */
 
 // Method to signin user
 
@@ -238,6 +151,42 @@ exports.updateUser = async (req, res) => {
       });
     }
   };
+  
+  exports.forgotPassword = async (req, res) => {
+      try {
+          const { email } = req.body;
+  
+          // Find user by email
+          const user = await User.findOne({ email });
+  
+          if (!user) {
+              // If the user with the given email doesn't exist
+              return res.status(400).json({ error: 'User not found with this email' });
+          }
+  
+          // Generate a reset password token
+          const resetToken = crypto.randomBytes(20).toString('hex');
+  
+          // Set the reset token and expiry time in the user object
+          user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+          user.resetPasswordExpires = Date.now() + 3600000; // Token valid for 1 hour
+  
+          // Save the user object with reset token details
+          await user.save();
+  
+          // Send reset password email
+          sendResetPasswordEmail(user.email, resetToken);
+  
+          // Return success response
+          res.json({ message: 'Password reset email sent successfully' });
+      } catch (err) {
+          console.error('FORGOT PASSWORD ERROR', err);
+          res.status(500).json({
+              error: 'Internal Server Error'
+          });
+      }
+  };
+  
 
 
 // To delete a user
@@ -269,27 +218,3 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
-
-
-
-//  User.findOne({email}).exec((err, user) => {
-//     if(err || !user) {
-//         return res.status(400).json({
-//             error: 'User with that email does not exist, please sign up '
-//         })
-//     }  
-//     // To authenticate
-//     if(!user.authenticate(password)) {
-//         return res.status(400).json({
-//             error: 'Email and password do not match'
-//         })
-//     }
-//     // To generate a token and send to user client/user
-//     const token = jwt.sign({userId: user.userId}, process.env.JWT_SECRET, {expiresIn: '7d'});
-//     const {userId, firstname, email, role} = user
-
-//     return res.json({
-//         token,
-//         user: {userId, firstname, email, role}
-//     });
-// })
