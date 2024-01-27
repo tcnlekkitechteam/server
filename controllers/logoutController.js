@@ -20,8 +20,7 @@ const handleLogout = async (req, res) => {
 
   // Delete refreshToken in db
   foundUser.refreshToken = "";
-  const result = await foundUser.save();
-  console.log(result);
+  foundUser.save();
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
