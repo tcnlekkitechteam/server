@@ -1,41 +1,53 @@
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-require('dotenv').config();
-
+require("dotenv").config();
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+const corsOptions = require("./config/corsOptions");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
+const errorHandler = require("./middlewares/errorHandler");
 const app = express();
-
-// To connect to database
-mongoose.connect(process.env.DATABASE, {
-  
-}) 
-.then(() => console.log('DB connected'))
-.catch(err => console.log('DB CONNECTION ERROR: ', err));
+const port = process.env.PORT || 8000;
 
 // import routes
-const authRoutes = require('./routes/auth');
+const authRoutes = require("./routes/auth");
+const connectDB = require("./config/dbConn");
+const credentials = require("./middlewares/credentials");
+
+// To connect to database
+connectDB();
 
 // app middlewares
-app.use(morgan('dev'));
-
+app.use(morgan("dev"));
 app.use(bodyParser.json());
 
-app.use(cors()); // allows all origins
-if (process.env.NODE_ENV === 'development') {
-   app.use(cors({origin: process.env.CLIENT_URL}));
-} else {
-    app.use(cors());
-} 
+// Handle options credentials check - before CORS!
+// and fetch cookies credentials requirement
+app.use(credentials);
 
+// Cross Origin Resource Sharing
+app.use(cors(corsOptions));
 
+// built-in middleware to handle urlencoded form data
+app.use(express.urlencoded({ extended: false }));
+
+// built-in middleware for json
+app.use(express.json());
+
+//middleware for cookies
+app.use(cookieParser());
 
 // Routes
-app.use('/api', authRoutes);
+app.use("/api", authRoutes);
+app.use("/api/refresh", require("./routes/refresh"));
+app.use("/api/logout", require("./routes/logout"));
 
+app.use(errorHandler);
 
-const port = process.env.PORT || 8000;
-app.listen(port, () => {
+mongoose.connection.once("open", () => {
+  console.log("Connected to MongoDB");
+  app.listen(port, () => {
     console.log(`API is running on port ${port}`);
+  });
 });
