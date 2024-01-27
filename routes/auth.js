@@ -12,7 +12,8 @@ router.post('/signup', userSignupValidator, runValidation, signup);
 router.post('/account-activation', accountActivation);
 router.post('/signin', userSigninValidator, runValidation, signin);
 router.put('/update-user/:userId', userUpdateValidator, runValidation, updateUser);
-router.delete('/user/:userId', deleteUser);
+// router.delete('/user/:userId', deleteUser);
+router.delete('/user/:userEmail', deleteUser);
 router.post('/forgot-password', forgotPassword);
 
 module.exports = router; 
