@@ -1,186 +1,151 @@
-const mongoose = require("mongoose");
-const crypto = require("crypto");
+const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 // user schema
-const userSchema = new mongoose.Schema(
-  {
+const userSchema = new mongoose.Schema({
     name: {
-      type: String,
-      trim: true,
-      required: true,
-      max: 50,
+        type: String,
+        trim: true,
+        required: true,
+        max: 50
     },
+   
     date: {
-      type: Date,
-      default: Date.now,
-      trim: true,
-      required: false,
+        type: Date,
+        default: Date.now,
+        trim: true,
+        required: false
+        
     },
     gender: {
-      type: String,
-      trim: true,
-      required: true,
-      enum: ["Male", "Female", "Other"],
+        type: String,
+        trim: true,
+        required: true,
+        enum: ['Male', 'Female', 'Other']
     },
     birthDay: {
-      type: String,
-      trim: true,
-      required: true,
-      max: 11,
+        type: String,
+        trim: true,
+        required: true,
+        max: 11
     },
     ageGroup: {
-      type: String,
-      enum: [
-        "Under 18",
-        "18 - 25",
-        "26 - 35",
-        "36 - 45",
-        "46 - 55",
-        "56 and above",
-      ],
-      trim: true,
-      required: true,
-      max: 15,
+        type: String,
+        enum: ['18 - 25', '26 - 35', '36 - 45', '46 - 55', '56 and above'],
+        trim: true,
+        required: true,
+        max: 15
     },
     residentialArea: {
-      type: String,
-      trim: true,
-      required: false,
-      max: 100,
+        type: String,
+        trim: true,
+        required: false,
+        max: 100
     },
     phoneNumber: {
-      type: String,
-      trim: true,
-      required: true,
-      max: 11,
+        type: String,
+        trim: true,
+        required: true,
+        max: 11
     },
     maritalStatus: {
-      type: String,
-      enum: ["Single", "Married", "Divorced", "Widowed", "Other"],
-      trim: true,
-      required: true,
-      max: 9,
+        type: String,
+        enum: ['Single', 'Married', 'Divorced', 'Widowed', 'Other'],
+        trim: true,
+        required: true,
+        max: 9
     },
     email: {
-      type: String,
-      trim: true,
-      required: true,
-      unique: true,
-      lowercase: true,
-    },
-    industry: {
-      type: String,
-      enum: [
-        "Banking and Finance",
-        "Agriculture",
-        "Education and Training",
-        "Consulting",
-        "Medical",
-        "Trade and Commerce",
-        "Oil and Gas",
-        "Technology",
-        "Arts and Entertainment",
-        "Legal",
-        "Politics",
-        "Telecoms",
-        "Energy",
-        "Manufacturing",
-        "Media and Advertising",
-        "Small Business",
-        "Others",
-      ],
-      trim: true,
-      required: false,
-      max: 32,
+        type: String,
+        trim: true,
+        required: true,
+        unique: true,
+        lowercase: true
+    },industry: {
+        type: String,
+        enum: ['Banking and Finance', 'Agriculture', 'Education and Training', 'Consulting', 'Medical', 'Trade and Commerce', 'Oil and Gas', 'Technology', 'Arts and Entertainment', 'Legal', 'Politics', 'Telecoms', 'Energy', 'Manufacturing', 'Media and Advertising', 'Small Business', 'Others'],
+        trim: true,
+        required: false,
+        max: 32
     },
     howDidYouHearAboutUs: {
-      type: String,
-      enum: [
-        "Billboards",
-        "Social media",
-        "Friends and family",
-        "TV-Radio-Print Media",
-        "TCN Event",
-        "Spirit Led",
-        "Others",
-      ],
-      trim: true,
-      required: false,
-      maax: 50,
+        type: String,
+        enum: ['Billboards', 'Social media', 'Friends and family', 'TV-Radio-Print Media', 'TCN Event', 'Spirit Led', 'Others'],
+        trim: true,
+        required: false,
+        maax: 50
     },
     nextSteps: {
-      type: String,
-      enum: [
-        "Be born Again",
-        "Be baptized",
-        "Join a discipleship class",
-        "Speak in tongues",
-      ],
-      trim: true,
-      required: false,
-      max: 32,
+        type: String,
+        enum: ['Be born Again', 'Be baptized', 'Join a discipleship class', 'Speak in tongues'],
+        trim: true,
+        required: false,
+        max: 32
     },
     getInvolved: {
-      type: String,
-      enum: ["Become a member", "Joining a service unit", "Follow online only"],
-      trim: true,
-      required: false,
-      max: 32,
+        type: String,
+        enum: ['Become a member', 'Joining a service unit', 'Follow online only'],
+        trim: true,
+        required: false,
+        max: 32
     },
     hashed_password: {
-      type: String,
-      required: true,
+        type: String,
+        required: true,
     },
     salt: String,
     role: {
-      type: String,
-      default: "subscriber",
+        type: String,
+        default: 'subscriber'
     },
     resetPasswordLink: {
-      type: String,
-      default: "",
+        type: String,
+        default: ''
     },
-    refreshToken: String,
-  },
-  { timestamps: true }
-);
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,       
+},
+ 
+{timestamps: true})
 // virtual
-userSchema
-  .virtual("password")
-  .set(function (password) {
-    this._password = password;
-    this.salt = this.makeSalt();
-    this.hashed_password = this.encryptPassword(password);
-  })
+userSchema.virtual('password')
+.set(function(password) {
+    this._password = password
+    this.salt = this.makeSalt()
+    this.hashed_password = this.encryptPassword(password)
+})
 
-  .get(function () {
-    return this._password;
-  });
+.get(function() {
+    return this._password
+})
 
 // methods
 userSchema.methods = {
-  authenticate: function (plainText) {
-    return this.encryptPassword(plainText) === this.hashed_password;
-  },
+    authenticate: function(plainText) {
+        return this.encryptPassword(plainText) === this.hashed_password
+    },
 
-  encryptPassword: function (password) {
-    if (!password) return "";
-    try {
-      return crypto
-        .createHmac("sha1", this.salt)
-        .update(password)
-        .digest("hex");
-    } catch (err) {
-      return "";
+    encryptPassword: function(password) {
+        if (!password) return ''
+        try {
+            return crypto.createHmac('sha1', this.salt)
+            .update(password)
+            .digest('hex');
+        } catch(err) {
+            return ''
+        }
+    },
+
+    makeSalt: function() {
+        return Math.round(new Date().valueOf() * Math.random()) + '';
     }
-  },
-
-  makeSalt: function () {
-    return Math.round(new Date().valueOf() * Math.random()) + "";
-  },
 };
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model('User', userSchema);
+
+
+
+
 
 // const mongoose = require('mongoose');
 // const crypto = require('crypto');
@@ -213,7 +178,7 @@ module.exports = mongoose.model("User", userSchema);
 //         type: String,
 //         default: ''
 //     },
-
+        
 // }, {timestamps: true})
 // // virtual
 // userSchema.virtual('password')

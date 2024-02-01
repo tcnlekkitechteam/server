@@ -2,23 +2,47 @@ const crypto = require('crypto');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const postmark = require('postmark');
+const moment = require('moment'); // Import moment library
 const { sendResetPasswordEmail } = require('../utils/email');
 
 const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
 exports.signup = async (req, res) => {
     try {
-        const {name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password} = req.body;
+        const { name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password } = req.body;
+
+        // Validate the birthDay format (DD-MM-YYYY)
+        // if (!moment(birthDay, 'DD-MM-YYYY', true).isValid()) {
+        //     return res.status(400).json({
+        //         error: 'Invalid birthDay format. Please use the format DD-MM-YYYY.',
+        //     });
+        // }
+
+        // // Calculate age based on birthDay
+        // const currentDate = new Date();
+        // const userBirthDay = moment(birthDay, 'DD-MM-YYYY').toDate();
+        // const age = currentDate.getFullYear() - userBirthDay.getFullYear();
+
+        // // Check if the calculated age is less than 18
+        // if (age < 18) {
+        //     return res.status(400).json({
+        //         error: 'You must be 18 years or older to sign up.',
+        //     });
+        // }
 
         const user = await User.findOne({ email });
 
         if (user) {
             return res.status(400).json({
-                error: 'We are sorry, Email is taken. Kindly signup using another email'
+                error: 'We are sorry, Email is taken. Kindly sign up using another email.',
             });
         }
 
-        const token = jwt.sign({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password }, process.env.JWT_ACCOUNT_ACTIVATION, { expiresIn: '3600m' });
+        const token = jwt.sign(
+            { name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password },
+            process.env.JWT_ACCOUNT_ACTIVATION,
+            { expiresIn: '3600m' }
+        );
 
         const emailData = {
             From: process.env.EMAIL_FROM,
@@ -36,7 +60,7 @@ exports.signup = async (req, res) => {
         const sent = await client.sendEmail(emailData);
 
         return res.json({
-            message: `Email has been sent to ${email}. Follow the instruction to activate your account`,
+            message: `Email has been sent to ${email}. Follow the instructions to activate your account.`,
         });
     } catch (err) {
         console.error('SIGNUP ERROR', err);
@@ -45,6 +69,7 @@ exports.signup = async (req, res) => {
         });
     }
 };
+
 
 exports.accountActivation = async (req, res) => {
     try {
@@ -187,6 +212,66 @@ exports.updateUser = async (req, res) => {
       }
   };
   
+  // Function for resetting user password using the reset token
+exports.resetPassword = async (req, res) => {
+    try {
+        const { resetToken, newPassword } = req.body;
+
+        // Find user by reset password token and check expiry time
+        const user = await User.findOne({
+            resetPasswordToken: crypto.createHash('sha256').update(resetToken).digest('hex'),
+            resetPasswordExpires: { $gt: Date.now() },
+        });
+
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid or expired reset token' });
+        }
+
+        // Set new password and reset token details
+        user.password = newPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+
+        // Save the updated user object
+        await user.save();
+
+        res.json({ message: 'Password reset successful' });
+    } catch (err) {
+        console.error('RESET PASSWORD ERROR', err);
+        res.status(500).json({
+            error: 'Internal Server Error'
+        });
+    }
+};
+
+exports.deleteUser = async (req, res) => {
+    try {
+        // Extract user email from the request parameters
+        const userEmail = req.params.userEmail;
+
+        // Check if the user exists
+        const user = await User.findOne({ email: userEmail });
+
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        // Delete the user
+        await User.deleteOne({ email: userEmail });
+
+        return res.json({
+            message: 'User has been deleted successfully'
+        });
+    } catch (err) {
+        console.error('DELETE USER ERROR', err);
+        res.status(500).json({
+            error: 'Internal Server Error'
+        });
+    }
+};
+
 
 
 // // To delete a user
@@ -218,30 +303,4 @@ exports.updateUser = async (req, res) => {
 //     }
 // };
 
-exports.deleteUser = async (req, res) => {
-    try {
-        // Extract user email from the request parameters
-        const userEmail = req.params.userEmail;
 
-        // Check if the user exists
-        const user = await User.findOne({ email: userEmail });
-
-        if (!user) {
-            return res.status(404).json({
-                error: 'User not found'
-            });
-        }
-
-        // Delete the user
-        await User.deleteOne({ email: userEmail });
-
-        return res.json({
-            message: 'User has been deleted successfully'
-        });
-    } catch (err) {
-        console.error('DELETE USER ERROR', err);
-        res.status(500).json({
-            error: 'Internal Server Error'
-        });
-    }
-};
