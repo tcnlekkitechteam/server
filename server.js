@@ -67,6 +67,13 @@ app.post('/feedback', async (req, res) => {
     }
 });
 
+app.get('/health-check', async (req, res) => {
+    return res.status(200).json({
+        success: 'Success',
+    });
+})
+
+
 app.listen(port, () => {
     console.log(`API is running on port ${port}`);
 });
