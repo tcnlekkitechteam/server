@@ -1,5 +1,13 @@
 const {check} = require('express-validator');
 
+// Custom validator for consent to check if it's a boolean
+const isBoolean = value => {
+  if (typeof value !== 'boolean') {
+      throw new Error('Consent must be a boolean value');
+  }
+  return true;
+};
+
 exports.userSignupValidator = [
     check('name')
         .not()
@@ -17,6 +25,9 @@ exports.userSignupValidator = [
         .not()
         .isEmpty()
         .withMessage('Your gender is required'),
+    check('consent')
+        .custom(isBoolean)
+        .withMessage('Your consent must be a boolean value'),
     check('phoneNumber')
         .not()
         .isEmpty()

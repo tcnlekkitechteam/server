@@ -9,7 +9,7 @@ const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
 exports.signup = async (req, res) => {
     try {
-        const { name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password } = req.body;
+        const { name, email, phoneNumber, birthDay, ageGroup, industry, gender, maritalStatus, password, consent} = req.body;
 
         // Validate the birthDay format (DD-MM-YYYY)
         // if (!moment(birthDay, 'DD-MM-YYYY', true).isValid()) {
@@ -38,8 +38,15 @@ exports.signup = async (req, res) => {
             });
         }
 
+        // To check if the user provided consent
+        if (!consent) {
+            return res.status(400).json({
+                error: 'Consent is required to sign up.',
+            });
+        }
+
         const token = jwt.sign(
-            { name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password },
+            { name, email, phoneNumber, birthDay, ageGroup, industry, gender, maritalStatus, password },
             process.env.JWT_ACCOUNT_ACTIVATION,
             { expiresIn: '3600m' }
         );
@@ -83,9 +90,9 @@ exports.accountActivation = async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
 
-        const {name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password } = jwt.decode(token);
+        const {name, email, phoneNumber, birthDay, ageGroup, industry, gender, maritalStatus, password, consent } = jwt.decode(token);
 
-        const user = new User({ name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, password });
+        const user = new User({ name, email, phoneNumber, birthDay, ageGroup, industry, gender, maritalStatus, password, consent });
 
         const savedUser = await user.save();
 
@@ -132,11 +139,11 @@ exports.signin = async (req, res) => {
 
         // To generate a token and send to user client/user
         const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        const {userId, name, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, role} = user;
+        const {userId, name, phoneNumber, birthDay, ageGroup, industry, gender, maritalStatus, role} = user;
 
         return res.json({
             token,
-            user: { userId,name, email, phoneNumber, birthDay, ageGroup, occupation, gender, maritalStatus, role }
+            user: { userId,name, email, phoneNumber, birthDay, ageGroup, industry, gender, maritalStatus, role }
         });
     } catch (err) {
         console.error('SIGNIN ERROR', err);

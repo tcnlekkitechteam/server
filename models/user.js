@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         enum: ['Male', 'Female', 'Other']
     },
+    consent: {
+        type: Boolean,
+        // required: false,
+    },
     birthDay: {
         type: String,
         trim: true,
