@@ -1,6 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
-const cors = require('cors');
+// const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Feedback = require('./models/feedback.model.js');
@@ -24,12 +24,12 @@ const authRoutes = require('./routes/auth');
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 
-// To allow all origins in development, or specific origin in production
-if (process.env.NODE_ENV === 'development') {
-    app.use(cors({ origin: process.env.CLIENT_URL }));
-} else {
-    app.use(cors());
-}
+// // To allow all origins in development, or specific origin in production
+// if (process.env.NODE_ENV === 'development') {
+//     app.use(cors({ origin: process.env.CLIENT_URL }));
+// } else {
+//     app.use(cors());
+// }
 
 // Routes
 app.use('/api', authRoutes);
