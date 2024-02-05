@@ -296,6 +296,42 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+// Function to filter users
+exports.filterUsers = async (req, res) => {
+    try {
+        const { maritalStatus, industry, gender, ageGroup } = req.query;
+        const filter = {};
+
+        // Add filters if they are provided
+        if (maritalStatus) {
+            filter.maritalStatus = maritalStatus;
+        }
+
+        if (industry) {
+            filter.industry = industry;
+        }
+
+        if (gender) {
+            filter.gender = gender;
+        }
+
+        if (ageGroup) {
+            filter.ageGroup = ageGroup;
+        }
+
+        const users = await User.find(filter, '-password -salt -resetPasswordToken -resetPasswordExpires -resetPasswordLink -hashed_password');
+        // Exclude sensitive information like password, salt, reset token, etc.
+
+        return res.json({
+            users,
+        });
+    } catch (error) {
+        console.error('FILTER USERS ERROR', error);
+        return res.status(500).json({
+            error: 'Internal Server Error',
+        });
+    }
+};
 
 
 // // To delete a user

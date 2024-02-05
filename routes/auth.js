@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {getAllUsers} = require('../controllers/auth');
+// const {getAllUsers} = require('../controllers/auth');
+const { getAllUsers, filterUsers } = require('../controllers/auth');
 // const moment = require('moment'); // Import moment library
 
 // import controller 
@@ -19,5 +20,7 @@ router.delete('/user/:userEmail', deleteUser);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.get('/users', getAllUsers);
+router.get('/users/filter', filterUsers);
+
 
 module.exports = router; 
