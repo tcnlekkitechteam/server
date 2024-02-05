@@ -279,6 +279,23 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
+// Function to get all users
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({}, '-password -salt -resetPasswordToken -resetPasswordExpires -resetPasswordLink -hashed_password');
+        // Excludes sensitive information like password, salt, reset token, etc.
+
+        return res.json({
+            users,
+        });
+    } catch (error) {
+        console.error('GET ALL USERS ERROR', error);
+        return res.status(500).json({
+            error: 'Internal Server Error',
+        });
+    }
+};
+
 
 
 // // To delete a user
