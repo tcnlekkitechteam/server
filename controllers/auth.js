@@ -98,7 +98,7 @@ exports.accountActivation = async (req, res) => {
 
         res.status(201).json({
             message: 'Signup successful. You can sign in now.',
-            user: savedUser,
+            // user: savedUser,
         });
     } catch (error) {
         console.error('Account Activation Error:', error);
