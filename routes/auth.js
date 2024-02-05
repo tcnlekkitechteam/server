@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const {getAllUsers} = require('../controllers/auth');
 // const moment = require('moment'); // Import moment library
 
 // import controller 
@@ -17,5 +18,6 @@ router.put('/update-user/:userId', userUpdateValidator, runValidation, updateUse
 router.delete('/user/:userEmail', deleteUser);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.get('/users', getAllUsers);
 
 module.exports = router; 
