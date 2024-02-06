@@ -296,6 +296,20 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+exports.countUsers = async (req, res) => {
+    try {
+        const userCount = await User.countDocuments();
+        return res.json({
+            count: userCount
+        });
+    } catch (error) {
+        console.error('COUNT USERS ERROR', error);
+        return res.status(500).json({
+            error: 'Internal Server Error',
+        });
+    }
+};
+
 // Function to filter users
 exports.filterUsers = async (req, res) => {
     try {
