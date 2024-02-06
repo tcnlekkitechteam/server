@@ -19,6 +19,7 @@ mongoose.connect(process.env.DATABASE, {
 
 // import routes
 const authRoutes = require('./routes/auth');
+const eventsRoutes = require('./routes/auth');
 
 // app middlewares
 app.use(morgan('dev'));
@@ -33,6 +34,7 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/api', authRoutes);
+app.use('/api', eventsRoutes);
 
 // Feedback endpoint
 app.post('/feedback', async (req, res) => {
