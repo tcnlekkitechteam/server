@@ -200,14 +200,9 @@ exports.signin = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    console.log("Generated Token", refreshToken);
-
     // Saving refreshToken with current user
     user.refreshToken = refreshToken;
-    console.log("Updated user data", user);
     await user.save();
-
-    console.log("Saved user data", user);
 
     // Creates Secure Cookie with refresh token
     res.cookie("refreshToken", refreshToken, {
