@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const postmark = require("postmark");
+const Newsletter = require('../models/newsletter');
 // const moment = require('moment'); // Import moment library
 const { sendResetPasswordEmail } = require("../utils/email");
 const { getUserAuthPayload } = require("../utils/getUserAuthPayload");
@@ -17,6 +18,7 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
+      department,
       gender,
       maritalStatus,
       password,
@@ -66,6 +68,7 @@ exports.signup = async (req, res) => {
         birthDay,
         ageGroup,
         industry,
+        department,
         gender,
         maritalStatus,
         password,
@@ -119,6 +122,7 @@ exports.accountActivation = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
+      department,
       gender,
       maritalStatus,
       password,
@@ -132,6 +136,7 @@ exports.accountActivation = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
+      department,
       gender,
       maritalStatus,
       password,
@@ -453,7 +458,7 @@ exports.countUsers = async (req, res) => {
 // Function to filter users
 exports.filterUsers = async (req, res) => {
   try {
-    const { maritalStatus, industry, gender, ageGroup } = req.query;
+    const { maritalStatus, industry, gender, ageGroup, department } = req.query;
     const filter = {};
 
     // Add filters if they are provided
@@ -463,6 +468,10 @@ exports.filterUsers = async (req, res) => {
 
     if (industry) {
       filter.industry = industry;
+    }
+
+    if (department) {
+      filter.department = department;
     }
 
     if (gender) {
@@ -489,6 +498,29 @@ exports.filterUsers = async (req, res) => {
     });
   }
 };
+
+exports.subscribeNewsletter = async (req, res) => {
+  try {
+      const { email } = req.body;
+
+      // Check if the email is already subscribed
+      const existingSubscriber = await Newsletter.findOne({ email });
+
+      if (existingSubscriber) {
+          return res.status(400).json({ error: 'Email is already subscribed to the newsletter' });
+      }
+
+      // Create a new subscriber document
+      const newSubscriber = new Newsletter({ email });
+      await newSubscriber.save();
+
+      res.status(200).json({ message: 'Successfully subscribed to the newsletter' });
+  } catch (error) {
+      console.error('Newsletter Subscription Error:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 
 // // To delete a user
 // exports.deleteUser = async (req, res) => {
