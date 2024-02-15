@@ -90,7 +90,30 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: false,
       max: 32,
-    },
+    },department: {
+      type: String,
+      enum: [
+          'w2media', 
+          'childrenChurch', 
+          'pastoralCareTeam', 
+          'trafficControl', 
+          'ushering', 
+          'technicalAndSound', 
+          'praiseTeam', 
+          'teensChurch', 
+          'infoDesk', 
+          'venueManagement', 
+          'medicalTeam', 
+          'sundaySchool', 
+          'camera', 
+          'baptismal', 
+          'contentAndSocialMedia', 
+          'pos'
+      ],
+      trim: true,
+      required: false,
+      max: 32
+  },
     howDidYouHearAboutUs: {
       type: String,
       enum: [

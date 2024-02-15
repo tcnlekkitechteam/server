@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/auth');
+const { subscribeNewsletter } = require('../controllers/auth');
 // const {getAllUsers} = require('../controllers/auth');
 const { getAllUsers, filterUsers } = require('../controllers/auth');
 // const moment = require('moment'); // Import moment library
@@ -23,6 +24,7 @@ router.post('/reset-password', resetPassword);
 router.get('/users', getAllUsers);
 router.get('/users/filter', filterUsers);
 router.get('/users/count', UserController.countUsers);
+router.post('/subscribe-newsletter', subscribeNewsletter);
 
 
 module.exports = router; 
