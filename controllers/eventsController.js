@@ -28,6 +28,11 @@ exports.getAllEvents = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // Check if events array is empty and return an empty array if so
+    if (events.length === 0) {
+      return res.json({ events: [], page, limit });
+    }
+
     res.json({ events, page, limit });
   } catch (error) {
     console.error('GET ALL EVENTS ERROR', error);
@@ -44,6 +49,11 @@ exports.getEventsByCategory = async (req, res) => {
     console.log('upcoming found')
     // Query recent events (events with date less than current date)
     const recentEvents = await Event.find({ date: { $lt: currentDate } });
+ 
+    // Check if both arrays are empty and return empty arrays if so
+    if (upcomingEvents.length === 0 && recentEvents.length === 0) {
+      return res.json({ upcomingEvents: [], recentEvents: [] });
+    }
 
     res.json({ upcomingEvents, recentEvents });
   } catch (error) {
