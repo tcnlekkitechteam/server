@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const postmark = require("postmark");
+const Department = require('../models/department');
 const Newsletter = require('../models/newsletter');
 // const moment = require('moment'); // Import moment library
 const { sendResetPasswordEmail } = require("../utils/email");
@@ -518,6 +519,89 @@ exports.subscribeNewsletter = async (req, res) => {
   } catch (error) {
       console.error('Newsletter Subscription Error:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.requireAuth = async (req, res, next) => {
+  try {
+      const token = req.headers.authorization;
+
+      if (!token) {
+          return res.status(401).json({ error: 'Authorization token not provided' });
+      }
+
+      // Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Attach the decoded user data to the request object
+      req.user = decoded;
+      next();
+  } catch (error) {
+      console.error('Authentication Error:', error);
+      return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+// Endpoint to allow registered users to join departments
+exports.joinDepartment = async (req, res) => {
+  try {
+      const { department } = req.body;
+      const { userId } = req.user; // Change from email to userId
+
+      // Check if the department is valid
+      const validDepartments = [
+          "w2media", "childrenChurch", "pastoralCareTeam", "trafficControl",
+          "ushering", "technicalAndSound", "praiseTeam", "teensChurch",
+          "infoDesk", "venueManagement", "medicalTeam", "sundaySchool",
+          "camera", "baptismal", "contentAndSocialMedia", "pos"
+      ];
+
+      if (!validDepartments.includes(department)) {
+          return res.status(400).json({ error: 'Invalid department' });
+      }
+
+      // Find the user by userId
+      const user = await User.findById(userId);
+
+      // Check if the user is already associated with a department
+      if (user.department) {
+          return res.status(400).json({ error: 'User is already associated with a department' });
+      }
+
+      // Find the department by name or create it if it doesn't exist
+      let departmentObj = await Department.findOne({ name: department });
+      if (!departmentObj) {
+          departmentObj = new Department({ name: department });
+          await departmentObj.save();
+      }
+
+      // Associate the user with the department
+      user.department = departmentObj._id;
+      await user.save();
+
+      res.status(200).json({ message: 'User successfully joined the department' });
+  } catch (error) {
+      console.error('Join Department Error:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user._id;
+
+      // Find the user
+      const user = await User.findById(userId);
+
+      // Change the password
+      await user.changePassword(currentPassword, newPassword);
+
+      // Send success response
+      res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+      console.error('Change Password Error:', error);
+      res.status(400).json({ error: error.message });
   }
 };
 
