@@ -542,49 +542,6 @@ exports.requireAuth = async (req, res, next) => {
   }
 };
 
-// Endpoint to allow registered users to join departments
-exports.joinDepartment = async (req, res) => {
-  try {
-      const { department } = req.body;
-      const { userId } = req.user; // Change from email to userId
-
-      // Check if the department is valid
-      const validDepartments = [
-          "w2media", "childrenChurch", "pastoralCareTeam", "trafficControl",
-          "ushering", "technicalAndSound", "praiseTeam", "teensChurch",
-          "infoDesk", "venueManagement", "medicalTeam", "sundaySchool",
-          "camera", "baptismal", "contentAndSocialMedia", "pos"
-      ];
-
-      if (!validDepartments.includes(department)) {
-          return res.status(400).json({ error: 'Invalid department' });
-      }
-
-      // Find the user by userId
-      const user = await User.findById(userId);
-
-      // Check if the user is already associated with a department
-      if (user.department) {
-          return res.status(400).json({ error: 'User is already associated with a department' });
-      }
-
-      // Find the department by name or create it if it doesn't exist
-      let departmentObj = await Department.findOne({ name: department });
-      if (!departmentObj) {
-          departmentObj = new Department({ name: department });
-          await departmentObj.save();
-      }
-
-      // Associate the user with the department
-      user.department = departmentObj._id;
-      await user.save();
-
-      res.status(200).json({ message: 'User successfully joined the department' });
-  } catch (error) {
-      console.error('Join Department Error:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
 
 exports.changePassword = async (req, res) => {
   try {

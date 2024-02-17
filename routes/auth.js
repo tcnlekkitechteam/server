@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/auth');
 const { subscribeNewsletter } = require('../controllers/auth');
-const { requireAuth, joinDepartment } = require('../controllers/auth');
+const { requireAuth } = require('../controllers/auth');
 const EventsController = require('../controllers/eventsController');
 // const {getAllUsers} = require('../controllers/auth');
 const { getAllUsers, filterUsers } = require('../controllers/auth');
@@ -30,8 +30,10 @@ router.post('/subscribe-newsletter', subscribeNewsletter);
 router.post('/events', EventsController.createEvent);
 router.get('/events', EventsController.getAllEvents);
 router.get('/events/categories', EventsController.getEventsByCategory);
-router.post('/joindepartment', requireAuth, joinDepartment);
 router.post('/change-password', requireAuth, changePassword);
+router.get('/health-check', (req, res) => {
+    res.status(200).json({ success: 'API is healthy' });
+});
 
 
 module.exports = router; 
