@@ -542,6 +542,25 @@ exports.requireAuth = async (req, res, next) => {
   }
 };
 
+exports.changePassword = async (req, res) => {
+  try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user._id;
+
+      // Find the user
+      const user = await User.findById(userId);
+
+      // Change the password
+      await user.changePassword(currentPassword, newPassword);
+
+      // Send success response
+      res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+      console.error('Change Password Error:', error);
+      res.status(400).json({ error: error.message });
+  }
+};
+
 
 
 // // To delete a user
