@@ -204,14 +204,6 @@ userSchema.methods = {
   },
 };
 
-// Method to change password
-userSchema.methods.changePassword = async function (currentPassword, newPassword) {
-  if (!this.authenticate(currentPassword)) {
-    throw new Error('Current password is incorrect');
-  }
-  this.password = newPassword;
-  await this.save();
-};
 
 module.exports = mongoose.model("User", userSchema);
 

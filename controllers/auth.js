@@ -2,7 +2,6 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const postmark = require("postmark");
-const Department = require('../models/department');
 const Newsletter = require('../models/newsletter');
 // const moment = require('moment'); // Import moment library
 const { sendResetPasswordEmail } = require("../utils/email");
@@ -78,6 +77,7 @@ exports.signup = async (req, res) => {
       { expiresIn: "3600m" }
     );
 
+    // To send email
     const emailData = {
       From: process.env.EMAIL_FROM,
       To: email,
@@ -542,25 +542,6 @@ exports.requireAuth = async (req, res, next) => {
   }
 };
 
-
-exports.changePassword = async (req, res) => {
-  try {
-      const { currentPassword, newPassword } = req.body;
-      const userId = req.user._id;
-
-      // Find the user
-      const user = await User.findById(userId);
-
-      // Change the password
-      await user.changePassword(currentPassword, newPassword);
-
-      // Send success response
-      res.json({ message: 'Password changed successfully' });
-  } catch (error) {
-      console.error('Change Password Error:', error);
-      res.status(400).json({ error: error.message });
-  }
-};
 
 
 // // To delete a user
