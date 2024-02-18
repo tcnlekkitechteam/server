@@ -77,6 +77,7 @@ exports.signup = async (req, res) => {
       { expiresIn: "3600m" }
     );
 
+    // To send email
     const emailData = {
       From: process.env.EMAIL_FROM,
       To: email,
