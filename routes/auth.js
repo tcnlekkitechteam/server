@@ -9,7 +9,7 @@ const { getAllUsers, filterUsers } = require('../controllers/auth');
 // const moment = require('moment'); // Import moment library
 
 // import controller 
-const { signup, accountActivation, signin, updateUser, forgotPassword, resetPassword, deleteUser } = require('../controllers/auth');
+const { signup, accountActivation, signin, updateUser, forgotPassword, resetPassword, deleteUser, changePassword } = require('../controllers/auth');
 
 // import validators
 const {userSignupValidator, userSigninValidator, userUpdateValidator,} = require('../Validators/auth');
