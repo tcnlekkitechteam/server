@@ -86,7 +86,7 @@ exports.signup = async (req, res) => {
                 <h1>Please use the following link to activate your account.</h1>
                 <p>${process.env.CLIENT_URL}/activate-account?token=${token}</p>
                 <hr/>
-                <p>This email may contain sensitive information</p>
+                <p>This email may contain sensitive information.</p>
                 <p>${process.env.CLIENT_URL}</p>
             `,
     };
