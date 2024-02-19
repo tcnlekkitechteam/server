@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const postmark = require("postmark");
-const Newsletter = require('../models/newsletter');
+const Newsletter = require("../models/newsletter");
 // const moment = require('moment'); // Import moment library
 const { sendResetPasswordEmail } = require("../utils/email");
 const { getUserAuthPayload } = require("../utils/getUserAuthPayload");
@@ -86,7 +86,7 @@ exports.signup = async (req, res) => {
                 <h1>Please use the following link to activate your account.</h1>
                 <p>${process.env.CLIENT_URL}/auth/activate/${token}</p>
                 <hr/>
-                <p>This email may contain sensitive information</p>
+                <p>This email may contain sensitive information.</p>
                 <p>${process.env.CLIENT_URL}</p>
             `,
     };
@@ -502,66 +502,70 @@ exports.filterUsers = async (req, res) => {
 
 exports.subscribeNewsletter = async (req, res) => {
   try {
-      const { email } = req.body;
+    const { email } = req.body;
 
-      // Check if the email is already subscribed
-      const existingSubscriber = await Newsletter.findOne({ email });
+    // Check if the email is already subscribed
+    const existingSubscriber = await Newsletter.findOne({ email });
 
-      if (existingSubscriber) {
-          return res.status(400).json({ error: 'Email is already subscribed to the newsletter' });
-      }
+    if (existingSubscriber) {
+      return res
+        .status(400)
+        .json({ error: "Email is already subscribed to the newsletter" });
+    }
 
-      // Create a new subscriber document
-      const newSubscriber = new Newsletter({ email });
-      await newSubscriber.save();
+    // Create a new subscriber document
+    const newSubscriber = new Newsletter({ email });
+    await newSubscriber.save();
 
-      res.status(200).json({ message: 'Successfully subscribed to the newsletter' });
+    res
+      .status(200)
+      .json({ message: "Successfully subscribed to the newsletter" });
   } catch (error) {
-      console.error('Newsletter Subscription Error:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Newsletter Subscription Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 exports.requireAuth = async (req, res, next) => {
   try {
-      const token = req.headers.authorization;
+    const token = req.headers.authorization;
 
-      if (!token) {
-          return res.status(401).json({ error: 'Authorization token not provided' });
-      }
+    if (!token) {
+      return res
+        .status(401)
+        .json({ error: "Authorization token not provided" });
+    }
 
-      // Verify the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Attach the decoded user data to the request object
-      req.user = decoded;
-      next();
+    // Attach the decoded user data to the request object
+    req.user = decoded;
+    next();
   } catch (error) {
-      console.error('Authentication Error:', error);
-      return res.status(401).json({ error: 'Invalid token' });
+    console.error("Authentication Error:", error);
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
 
 exports.changePassword = async (req, res) => {
   try {
-      const { currentPassword, newPassword } = req.body;
-      const userId = req.user._id;
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user._id;
 
-      // Find the user
-      const user = await User.findById(userId);
+    // Find the user
+    const user = await User.findById(userId);
 
-      // Change the password
-      await user.changePassword(currentPassword, newPassword);
+    // Change the password
+    await user.changePassword(currentPassword, newPassword);
 
-      // Send success response
-      res.json({ message: 'Password changed successfully' });
+    // Send success response
+    res.json({ message: "Password changed successfully" });
   } catch (error) {
-      console.error('Change Password Error:', error);
-      res.status(400).json({ error: error.message });
+    console.error("Change Password Error:", error);
+    res.status(400).json({ error: error.message });
   }
 };
-
-
 
 // // To delete a user
 // exports.deleteUser = async (req, res) => {
