@@ -43,11 +43,11 @@ exports.signup = async (req, res) => {
       // Save the user directly without email verification
       await user.save();
 
-      // Generate token for account activation
+      // Generate token for account activation (expires in 1 day)
       const token = jwt.sign(
           { userId: user._id },
           process.env.JWT_ACCOUNT_ACTIVATION,
-          { expiresIn: '7d' } // Token expires in 7 days
+          { expiresIn: '1d' } // Token expires in 1 day
       );
 
       // Send activation email
@@ -56,7 +56,7 @@ exports.signup = async (req, res) => {
           To: email,
           Subject: 'Account Activation Link',
           HtmlBody: `
-              <h1>Please use the following link to activate your account within 7 days.</h1>
+              <h1>Please use the following link to activate your account within 24 hours.</h1>
               <p>${process.env.CLIENT_URL}/auth/activate/${token}</p>
               <hr/>
               <p>This email may contain sensitive information</p>
@@ -91,7 +91,7 @@ exports.accountActivation = async (req, res) => {
 
       const { userId } = decoded;
 
-      // Check if the token is still within the activation window (7 days)
+      // Check if the token is still within the activation window (1 day)
       const user = await User.findById(userId);
 
       if (!user) {
@@ -100,7 +100,7 @@ exports.accountActivation = async (req, res) => {
           });
       }
 
-      // If activation is done within 7 days, set user's verified status to true
+      // If activation is done within 1 day, set user's verified status to true
       user.verified = true;
       await user.save();
 
@@ -121,6 +121,25 @@ exports.accountActivation = async (req, res) => {
       }
   }
 };
+
+// Function to delete unactivated users after 7 days
+const deleteUnactivatedUsers = async () => {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
+  // Find unactivated users created more than 7 days ago
+  const unactivatedUsers = await User.find({ verified: false, createdAt: { $lte: sevenDaysAgo } });
+
+  // Delete unactivated users
+  for (const user of unactivatedUsers) {
+      await user.remove();
+      console.log(`Deleted unactivated user with email: ${user.email}`);
+  }
+};
+
+// Call the function periodically, for example, every day
+setInterval(deleteUnactivatedUsers, 24 * 60 * 60 * 1000); // 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
+
 
 // Method to signin user
 exports.signin = async (req, res) => {
