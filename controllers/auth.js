@@ -10,6 +10,7 @@ const { getUserAuthPayload } = require("../utils/getUserAuthPayload");
 
 const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
+// How to register a user
 exports.signup = async (req, res) => {
   try {
       const { name, email, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, password, consent } = req.body;
