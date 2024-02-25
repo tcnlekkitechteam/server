@@ -5,6 +5,7 @@ const cors = require("cors");
 const corsOptions = require("./config/corsOptions");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const departmentRoutes = require('./routes/departmentRoutes');
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middlewares/errorHandler");
 const Feedback = require('./models/feedback.model.js');
@@ -43,6 +44,7 @@ app.use(cookieParser());
 app.use("/api", authRoutes);
 app.use("/api/refresh", require("./routes/refresh"));
 app.use("/api/logout", require("./routes/logout"));
+app.use('/api', departmentRoutes);
 
 
 // Feedback endpoint

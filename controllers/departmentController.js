@@ -44,6 +44,11 @@ exports.saveUserToDepartment = async (req, res) => {
 
         const user = await User.findById(_id);
 
+         // Check if the user is already associated with the department
+         if (user.department === department) {
+            return res.status(400).json({ error: 'User is already associated with this department' });
+        }
+
         // Ensure that the department field exists in departmentObj
         if (!departmentObj[department]) {
             departmentObj[department] = []; // Initialize department field as an array if it doesn't exist
