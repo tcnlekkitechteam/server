@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middlewares/errorHandler");
+const departmentRoutes = require('./routes/departmentRoutes');
 const Feedback = require('./models/feedback.model.js');
 const app = express();
 const port = process.env.PORT || 8000;
@@ -41,6 +42,7 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api", authRoutes);
+app.use('/api', departmentRoutes);
 app.use("/api/refresh", require("./routes/refresh"));
 app.use("/api/logout", require("./routes/logout"));
 
