@@ -69,7 +69,7 @@ exports.signup = async (req, res) => {
           Subject: 'Account Activation Link',
           HtmlBody: `
               <h1>Please use the following link to activate your account within 24 hours.</h1>
-              <p>${process.env.CLIENT_URL}/auth/activate/${token}</p>
+              <p>${process.env.CLIENT_URL}/activate-account?token=${token}</p>
               <hr/>
               <p>This email may contain sensitive information</p>
               <p>${process.env.CLIENT_URL}</p>
