@@ -255,7 +255,7 @@ exports.signin = async (req, res) => {
     // Destructure user details for response
     const { _id, name, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role } = user;
 
-    // Return token, user details, and verification status in response
+    // To return token, user details, and verification status in response
     return res.json({
       accessToken,
       user: { _id, name, email, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role, verified: user.verified }
