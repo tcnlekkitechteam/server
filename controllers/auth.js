@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const postmark = require("postmark");
+const bcrypt = require('bcrypt')
 const Newsletter = require("../models/newsletter");
 // const moment = require('moment'); // Import moment library
 const { sendResetPasswordEmail } = require("../utils/email");

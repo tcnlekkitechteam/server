@@ -8,7 +8,6 @@ const mongoose = require("mongoose");
 const departmentRoutes = require('./routes/departmentRoutes');
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middlewares/errorHandler");
-// const departmentRoutes = require('./routes/departmentRoutes');
 const Feedback = require('./models/feedback.model.js');
 const app = express();
 const port = process.env.PORT || 8000;
