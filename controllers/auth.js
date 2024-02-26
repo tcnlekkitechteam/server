@@ -218,6 +218,10 @@ exports.signin = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
+     // Destructure user details for response
+     const { _id, name, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role } = user;
+
+     //To return token, user details, and verification status in response
     return res.json({
       accessToken,
       user: getUserAuthPayload(user),
