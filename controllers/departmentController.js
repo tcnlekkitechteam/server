@@ -3,7 +3,7 @@ const User = require('../models/user');
 
 exports.createDepartmentTable = async (req, res) => {
     try {
-        // Check if the departments table already exists
+        // To Check if the departments table already exists
         const existingDepartment = await Department.findOne({});
         if (existingDepartment) {
             return res.status(400).json({ error: 'Department table already exists' });
