@@ -170,66 +170,63 @@ exports.signin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // To check if user exists
-    const user = await User.findOne({ email }).exec();
+    // Find the user by email
+    const user = await User.findOne({ email });
 
+    // Check if the user exists
     if (!user) {
       return res.status(400).json({
-        error: "User with that email does not exist, please sign up",
+        error: 'User with that email does not exist, please sign up'
       });
     }
 
-    // To authenticate
-    if (!user.authenticate(password)) {
+    // Check if the provided password matches the hashed password stored for the user
+    const isPasswordValid = await bcrypt.compare(password, user.hashed_password);
+
+    if (!isPasswordValid) {
       return res.status(400).json({
-        error: "Email and password do not match",
+        error: 'Email and password do not match'
       });
     }
 
-    // To generate a token and send to user client/user
+    // Generate a token for the authenticated user
     const accessToken = jwt.sign(
-      {
-        UserInfo: {
-          username: user.name,
-          userId: user.userId,
-        },
-      },
+      { userId: user._id, email: user.email },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "10s",
-      }
+      { expiresIn: '7d' }
     );
 
+    // Generate a refresh token for the authenticated user
     const refreshToken = jwt.sign(
-      { name: user.name },
+      { userId: user._id, email: user.email },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: '1d' }
     );
 
-    // Saving refreshToken with current user
+    // Save the refresh token to the user document
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Creates Secure Cookie with refresh token
-    res.cookie("refreshToken", refreshToken, {
+    // Create a secure HTTP-only cookie with the refresh token
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 24 * 60 * 60 * 1000,
+      secure: true, // Ensures the cookie is only sent over HTTPS
+      sameSite: 'None', // Allows cross-site requests
+      maxAge: 24 * 60 * 60 * 1000, // Expires in 1 day
     });
 
-     // Destructure user details for response
-     const { _id, name, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role } = user;
+    // Destructure user details for response
+    const { _id, name, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role } = user;
 
-     //To return token, user details, and verification status in response
+    // To return token, user details, and verification status in response
     return res.json({
       accessToken,
-      user: getUserAuthPayload(user),
+      user: { _id, name, email, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role, verified: user.verified }
     });
   } catch (err) {
-    console.error("SIGNIN ERROR", err);
-    res.status(500).json({
-      error: "Internal Server Error",
+    console.error('SIGNIN ERROR', err);
+    return res.status(500).json({
+      error: 'Internal Server Error'
     });
   }
 };
