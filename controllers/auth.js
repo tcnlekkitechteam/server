@@ -269,6 +269,7 @@ exports.signin = async (req, res) => {
     // To return token, user details, and verification status in response
     return res.json({
       accessToken,
+      refreshToken, // Sending the refresh token alongside the access token
       user: { _id, name, email, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role, verified: user.verified }
     });
   } catch (err) {
