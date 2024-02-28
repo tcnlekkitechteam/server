@@ -94,8 +94,8 @@ exports.accountActivation = async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
-      return res.json({
-        message: "Something went wrong, please try again.",
+      return res.status(400).json({
+        message: "Please provide a valid token for account activation!",
       });
     }
 
