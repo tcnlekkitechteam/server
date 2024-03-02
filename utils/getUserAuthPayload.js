@@ -9,6 +9,7 @@ function getUserAuthPayload(user) {
     gender,
     maritalStatus,
     role,
+    department,
   } = user;
 
   return {
@@ -22,6 +23,7 @@ function getUserAuthPayload(user) {
     gender,
     maritalStatus,
     role,
+    department,
   };
 }
 
