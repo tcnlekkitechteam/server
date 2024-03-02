@@ -10,7 +10,14 @@ const userSchema = new mongoose.Schema(
       required: true,
       max: 50,
     },
-
+    roles: {
+      User: {
+        type: Number,
+        default: 5150, //TODO: change default role back to admin 2001
+      },
+      Editor: Number,
+      Admin: Number,
+    },
     date: {
       type: Date,
       default: Date.now,
@@ -90,30 +97,31 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: false,
       max: 32,
-    },department: {
+    },
+    department: {
       type: String,
       enum: [
-          'w2media', 
-          'childrenChurch', 
-          'pastoralCareTeam', 
-          'trafficControl', 
-          'ushering', 
-          'technicalAndSound', 
-          'praiseTeam', 
-          'teensChurch', 
-          'infoDesk', 
-          'venueManagement', 
-          'medicalTeam', 
-          'sundaySchool', 
-          'camera', 
-          'baptismal', 
-          'contentAndSocialMedia', 
-          'pos'
+        "w2media",
+        "childrenChurch",
+        "pastoralCareTeam",
+        "trafficControl",
+        "ushering",
+        "technicalAndSound",
+        "praiseTeam",
+        "teensChurch",
+        "infoDesk",
+        "venueManagement",
+        "medicalTeam",
+        "sundaySchool",
+        "camera",
+        "baptismal",
+        "contentAndSocialMedia",
+        "pos",
       ],
       trim: true,
       required: false,
-      max: 32
-  },
+      max: 32,
+    },
     howDidYouHearAboutUs: {
       type: String,
       enum: [
@@ -203,7 +211,6 @@ userSchema.methods = {
     return Math.round(new Date().valueOf() * Math.random()) + "";
   },
 };
-
 
 module.exports = mongoose.model("User", userSchema);
 

@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const postmark = require("postmark");
-const bcrypt = require('bcrypt')
+const bcrypt = require("bcrypt");
 const Newsletter = require("../models/newsletter");
 // const moment = require('moment'); // Import moment library
 const { sendResetPasswordEmail } = require("../utils/email");
@@ -12,80 +12,80 @@ const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
 exports.signup = async (req, res) => {
   try {
-      const { 
-        name, 
-        email, 
-        phoneNumber, 
-        birthDay, 
-        ageGroup, 
-        industry, 
-        department, 
-        gender, 
-        maritalStatus, 
-        password, 
-        consent 
+    const {
+      name,
+      email,
+      phoneNumber,
+      birthDay,
+      ageGroup,
+      industry,
+      department,
+      gender,
+      maritalStatus,
+      password,
+      consent,
     } = req.body;
 
-       // Check if the email already exists
-       const existingUser = await User.findOne({ email });
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email });
 
-       if (existingUser) {
-           return res.status(400).json({
-               error: 'Email is already taken. Please sign up with a different email.',
-           });
-       }
-
-      // Hash the password
-      const hashed_password = await bcrypt.hash(password, 10);
-
-      const user = new User({ 
-          name, 
-          email, 
-          phoneNumber, 
-          birthDay, 
-          ageGroup, 
-          industry,
-          department, 
-          gender, 
-          maritalStatus, 
-          hashed_password, // Set the hashed password
-          consent
+    if (existingUser) {
+      return res.status(400).json({
+        error: "Email is already taken. Please sign up with a different email.",
       });
+    }
 
-      // Save the user directly without email verification
-      await user.save();
+    // Hash the password
+    const hashed_password = await bcrypt.hash(password, 10);
 
-      // Generate token for account activation (expires in 1 day)
-      const token = jwt.sign(
-          { userId: user._id },
-          process.env.JWT_ACCOUNT_ACTIVATION,
-          { expiresIn: '1d' } // Token expires in 1 day
-      );
+    const user = new User({
+      name,
+      email,
+      phoneNumber,
+      birthDay,
+      ageGroup,
+      industry,
+      department,
+      gender,
+      maritalStatus,
+      hashed_password, // Set the hashed password
+      consent,
+    });
 
-      // Send activation email
-      const emailData = {
-          From: process.env.EMAIL_FROM,
-          To: email,
-          Subject: 'Account Activation Link',
-          HtmlBody: `
+    // Save the user directly without email verification
+    await user.save();
+
+    // Generate token for account activation (expires in 1 day)
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_ACCOUNT_ACTIVATION,
+      { expiresIn: "1d" } // Token expires in 1 day
+    );
+
+    // Send activation email
+    const emailData = {
+      From: process.env.EMAIL_FROM,
+      To: email,
+      Subject: "Account Activation Link",
+      HtmlBody: `
               <h1>Please use the following link to activate your account within 24 hours.</h1>
               <p>${process.env.CLIENT_URL}/activate-account?token=${token}</p>
               <hr/>
               <p>This email may contain sensitive information</p>
               <p>${process.env.CLIENT_URL}</p>
           `,
-      };
+    };
 
-      await client.sendEmail(emailData);
+    await client.sendEmail(emailData);
 
-      return res.json({
-          message: `Email has been sent to ${email}. Follow the instructions to activate your account.`,
-      });
+    return res.json({
+      message: `Email has been sent to ${email}. Follow the instructions to activate your account.`,
+    });
   } catch (err) {
-      console.error('SIGNUP ERROR', err);
-      return res.status(500).json({
-          error: 'Internal Server Error',
-      });
+    console.error("SIGNUP ERROR", err);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
   }
 };
 
@@ -152,46 +152,47 @@ exports.accountActivation = async (req, res) => {
 
 exports.accountActivation = async (req, res) => {
   try {
-      const { token } = req.body;
+    const { token } = req.body;
 
-      if (!token) {
-          return res.status(400).json({
-              error: 'Token is required for account activation',
-          });
-      }
-
-      const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
-
-      const { userId } = decoded;
-
-      // Check if the token is still within the activation window (1 day)
-      const user = await User.findById(userId);
-
-      if (!user) {
-          return res.status(400).json({
-              error: 'User not found',
-          });
-      }
-
-      // If activation is done within 1 day, set user's verified status to true
-      user.verified = true;
-      await user.save();
-
-      res.status(201).json({
-          message: 'Account activated successfully. You can sign in now.',
+    if (!token) {
+      return res.status(400).json({
+        error: "Token is required for account activation",
       });
-  } catch (error) {
-      console.error('Account Activation Error:', error);
+    }
 
-      if (error.name === 'TokenExpiredError') {
-          res.status(401).json({
-              error: 'Sorry, the activation link has expired. Please sign up again.',
-          });
-      } else {
-          res.status(401).json({
-              error: 'Error during account activation. Please try again or sign up again.',
-          });
-      }
+    const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
+
+    const { userId } = decoded;
+
+    // Check if the token is still within the activation window (1 day)
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({
+        error: "User not found",
+      });
+    }
+
+    // If activation is done within 1 day, set user's verified status to true
+    user.verified = true;
+    await user.save();
+
+    res.status(201).json({
+      message: "Account activated successfully. You can sign in now.",
+    });
+  } catch (error) {
+    console.error("Account Activation Error:", error);
+
+    if (error.name === "TokenExpiredError") {
+      res.status(401).json({
+        error: "Sorry, the activation link has expired. Please sign up again.",
+      });
+    } else {
+      res.status(401).json({
+        error:
+          "Error during account activation. Please try again or sign up again.",
+      });
+    }
   }
 };
 
@@ -199,14 +200,17 @@ exports.accountActivation = async (req, res) => {
 const deleteUnactivatedUsers = async () => {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  
+
   // Find unactivated users created more than 7 days ago
-  const unactivatedUsers = await User.find({ verified: false, createdAt: { $lte: sevenDaysAgo } });
+  const unactivatedUsers = await User.find({
+    verified: false,
+    createdAt: { $lte: sevenDaysAgo },
+  });
 
   // Delete unactivated users
   for (const user of unactivatedUsers) {
-      await user.remove();
-      console.log(`Deleted unactivated user with email: ${user.email}`);
+    await user.remove();
+    console.log(`Deleted unactivated user with email: ${user.email}`);
   }
 };
 
@@ -224,16 +228,19 @@ exports.signin = async (req, res) => {
     // Check if the user exists
     if (!user) {
       return res.status(400).json({
-        error: 'User with that email does not exist, please sign up'
+        error: "User with that email does not exist, please sign up",
       });
     }
 
     // Check if the provided password matches the hashed password stored for the user
-    const isPasswordValid = await bcrypt.compare(password, user.hashed_password);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.hashed_password
+    );
 
     if (!isPasswordValid) {
       return res.status(400).json({
-        error: 'Email and password do not match'
+        error: "Email and password do not match",
       });
     }
 
@@ -241,14 +248,14 @@ exports.signin = async (req, res) => {
     const accessToken = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: "7d" }
     );
 
     // Generate a refresh token for the authenticated user
     const refreshToken = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: "1d" }
     );
 
     // Save the refresh token to the user document
@@ -256,26 +263,52 @@ exports.signin = async (req, res) => {
     await user.save();
 
     // Create a secure HTTP-only cookie with the refresh token
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true, // Ensures the cookie is only sent over HTTPS
-      sameSite: 'None', // Allows cross-site requests
+      sameSite: "None", // Allows cross-site requests
       maxAge: 24 * 60 * 60 * 1000, // Expires in 1 day
     });
 
     // Destructure user details for response
-    const { _id, name, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role } = user;
+    const {
+      _id,
+      name,
+      phoneNumber,
+      birthDay,
+      ageGroup,
+      industry,
+      department,
+      gender,
+      maritalStatus,
+      role,
+      roles,
+    } = user;
 
     // To return token, user details, and verification status in response
     return res.json({
       accessToken,
+      roles: Object.values(roles).filter(Boolean),
       refreshToken, // Sending the refresh token alongside the access token
-      user: { _id, name, email, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role, verified: user.verified }
+      user: {
+        _id,
+        name,
+        email,
+        phoneNumber,
+        birthDay,
+        ageGroup,
+        industry,
+        department,
+        gender,
+        maritalStatus,
+        role,
+        verified: user.verified,
+      },
     });
   } catch (err) {
-    console.error('SIGNIN ERROR', err);
+    console.error("SIGNIN ERROR", err);
     return res.status(500).json({
-      error: 'Internal Server Error'
+      error: "Internal Server Error",
     });
   }
 };
