@@ -6,6 +6,7 @@ const corsOptions = require("./config/corsOptions");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const departmentRoutes = require("./routes/api/departments.js");
+const usersRoutes = require("./routes/api/users.js");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middlewares/errorHandler");
 const Feedback = require("./models/feedback.model.js");
@@ -42,6 +43,7 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api", authRoutes);
+app.use("/api/users", usersRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/refresh", require("./routes/refresh"));
 app.use("/api/logout", require("./routes/logout"));

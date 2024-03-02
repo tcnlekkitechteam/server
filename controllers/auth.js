@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const User = require("../models/user");
+const Department = require("../models/DepartmentModel");
 const jwt = require("jsonwebtoken");
 const postmark = require("postmark");
 const bcrypt = require("bcrypt");
@@ -7,6 +8,8 @@ const Newsletter = require("../models/newsletter");
 // const moment = require('moment'); // Import moment library
 const { sendResetPasswordEmail } = require("../utils/email");
 const { getUserAuthPayload } = require("../utils/getUserAuthPayload");
+const { ObjectId } = require("mongodb");
+const { default: mongoose } = require("mongoose");
 
 const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
@@ -19,15 +22,26 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
-      department,
       gender,
       maritalStatus,
       password,
+      department,
       consent,
     } = req.body;
 
     // Check if the email already exists
     const existingUser = await User.findOne({ email });
+    let validDepartment;
+    if (department) {
+      validDepartment = await Department.findById(
+        new mongoose.Types.ObjectId(department)
+      );
+      if (!validDepartment) {
+        res.status(400).json({
+          message: "Department not recognized.",
+        });
+      }
+    }
 
     if (existingUser) {
       return res.status(400).json({
@@ -45,12 +59,18 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
-      department,
       gender,
       maritalStatus,
       hashed_password, // Set the hashed password
       consent,
     });
+
+    if (validDepartment) {
+      user.department = {
+        name: validDepartment.name,
+        id: validDepartment._id,
+      };
+    }
 
     // Save the user directly without email verification
     await user.save();
@@ -289,7 +309,7 @@ exports.signin = async (req, res) => {
     return res.json({
       accessToken,
       roles: Object.values(roles).filter(Boolean),
-      refreshToken, // Sending the refresh token alongside the access token
+      // refreshToken, // Sending the refresh token alongside the access token
       user: {
         _id,
         name,
