@@ -6,6 +6,8 @@ const { requireAuth } = require('../controllers/auth');
 const EventsController = require('../controllers/eventsController');
 // const {getAllUsers} = require('../controllers/auth');
 const { getAllUsers, filterUsers } = require('../controllers/auth');
+const verifyRoles = require("../middlewares/verifyRoles");
+const ROLES_LIST = require("../config/roles_list");
 // const moment = require('moment'); // Import moment library
 
 // import controller 
@@ -27,9 +29,14 @@ router.get('/users', getAllUsers);
 router.get('/users/filter', filterUsers);
 router.get('/users/count', UserController.countUsers);
 router.post('/subscribe-newsletter', subscribeNewsletter);
-router.post('/events', EventsController.createEvent);
+router.post('/events', verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor), EventsController.createEvent);
 router.get('/events', EventsController.getAllEvents);
 router.get('/events/categories', EventsController.getEventsByCategory);
+router.get('/events/today', EventsController.getTodayEvents);
+router.get('/events/:id', EventsController.getEventsById);
+router.delete('/events/:id', EventsController.DeleteEventsById);
+router.put('/events/:id', verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor), EventsController.updateEvent);
+
 router.post('/change-password', requireAuth, changePassword);
 router.get('/health-check', (req, res) => {
     res.status(200).json({ success: 'API is healthy' });
