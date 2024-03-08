@@ -29,7 +29,7 @@ router.get('/users', getAllUsers);
 router.get('/users/filter', filterUsers);
 router.get('/users/count', UserController.countUsers);
 router.post('/subscribe-newsletter', subscribeNewsletter);
-router.post('/events', EventsController.createEvent);
+router.post('/events', verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor), EventsController.createEvent);
 router.get('/events', EventsController.getAllEvents);
 router.get('/events/categories', EventsController.getEventsByCategory);
 router.get('/events/today', EventsController.getTodayEvents);
