@@ -61,3 +61,88 @@ exports.getEventsByCategory = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+exports.getEventsById = async (req, res) => {
+  try {
+    if (!req?.params?.id)
+    return res.status(400).json({ message: "Event ID required." });
+
+  const event = await Event.findOne({ _id: req.params.id }).exec();
+  if (!event) {
+    return res
+      .status(204)
+      .json({ message: `No event matches ID ${req.params.id}.` });
+  }
+  return res.json(event);
+  } catch (error) {
+    console.error('GET EVENTS BY ID ERROR', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.getTodayEvents = async (req, res) => {
+  try {
+    // current date
+    const currentDate = new Date();
+
+    // Calculate the start and end of the current day
+    const startOfDay = new Date(currentDate.setHours(0, 0, 0)).toISOString()
+    const endOfDay = new Date(new Date(currentDate).setHours(24, 0, 0)).toISOString();
+    
+    // Query today's events (events with date equal to current date)
+    const TodayEvents = await Event.find({
+      date: {$gt: startOfDay, $lt: endOfDay}
+    });
+    
+    
+    // Check if arrays is empty and return empty arrays if so
+    if (TodayEvents.length === 0) {
+      return res.json({ TodayEvents: [] });
+    }
+
+    return res.json({ TodayEvents });
+  } catch (error) {
+    console.error('GET EVENTS BY CATEGORY ERROR', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+exports.DeleteEventsById = async (req, res) => {
+  try {
+    if (!req?.params?.id)
+    return res.status(400).json({ message: "Event ID required." });
+
+  const deletedEvent = await Event.deleteOne({ _id: req.params.id }).exec();
+  if (!deletedEvent.acknowledged) {
+    return res
+      .status(204)
+      .json({ message: `No event matches ID ${req.params.id}.` });
+  }
+  return res.json(deletedEvent.acknowledged);
+  } catch (error) {
+    console.error('DELETE EVENTS BY ID ERROR', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.updateEvent = async (req, res) => {
+  if (!req?.params?.id) {
+    return res.status(400).json({ message: "Event ID is required." });
+  }
+
+  const event = await Event.findOne({ _id: req.params.id }).exec();
+  if (!event) {
+    return res
+      .status(204)
+      .json({ message: `No event matches ID ${req.body.id}.` });
+  }
+  if (req.body?.eventName) event.eventName = req.body.eventName;
+  if (req.body?.date) event.date = req.body.date;
+  if (req.body?.time) event.time = req.body.time;
+  if (req.body?.registrationLink) event.registrationLink = req.body.registrationLink;
+  if (req.body?.image) event.image = req.body.image;
+
+  const result = await event.updateOne(event);
+  res.json(result);
+};
