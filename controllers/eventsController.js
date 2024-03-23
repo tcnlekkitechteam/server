@@ -1,4 +1,4 @@
-const Event = require('../routes/event');
+const Event = require('../models/event');
 
 exports.createEvent = async (req, res) => {
   try {
@@ -47,6 +47,7 @@ exports.getEventsByCategory = async (req, res) => {
     // Query upcoming events (events with date greater than or equal to current date)
     const upcomingEvents = await Event.find({ date: { $gte: currentDate } });
     console.log('upcoming found')
+
     // Query recent events (events with date less than current date)
     const recentEvents = await Event.find({ date: { $lt: currentDate } });
  
@@ -58,6 +59,45 @@ exports.getEventsByCategory = async (req, res) => {
     res.json({ upcomingEvents, recentEvents });
   } catch (error) {
     console.error('GET EVENTS BY CATEGORY ERROR', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.getUpcomingEvents = async (req, res) => {
+  try {
+    const currentDate = new Date();
+    
+    // Query upcoming events (events with date greater than or equal to current date)
+    const upcomingEvents = await Event.find({ date: { $gte: currentDate } });
+    console.log('upcoming found')
+    
+    // Check if arrays is empty and return empty arrays if so
+    if (upcomingEvents.length === 0) {
+      return res.json({ upcomingEvents: []});
+    }
+
+    res.json({ upcomingEvents});
+  } catch (error) {
+    console.error('GET UPCOMING EVENTS ERROR', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.getRecentEvents = async (req, res) => {
+  try {
+    const currentDate = new Date();
+    
+    // Query recent events (events with date less than current date)
+    const recentEvents = await Event.find({ date: { $lt: currentDate } });
+ 
+    // Check if both arrays are empty and return empty arrays if so
+    if (recentEvents.length === 0) {
+      return res.json({ recentEvents: [] });
+    }
+
+    res.json({ recentEvents });
+  } catch (error) {
+    console.error('GET RECENT EVENTS ERROR', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
