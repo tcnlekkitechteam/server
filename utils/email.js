@@ -10,7 +10,7 @@ exports.sendResetPasswordEmail = async (email, resetToken) => {
         Subject: 'Reset Password Link',
         HtmlBody: `
             <h1>Please use the following link to reset your password.</h1>
-            <p>${process.env.CLIENT_URL}/auth/reset-password/${resetToken}</p>
+            <p>${process.env.CLIENT_URL}/reset-password?token=${resetToken}</p>
             <hr/>
             <p>This email may contain sensitive information</p>
             <p>${process.env.CLIENT_URL}</p>
