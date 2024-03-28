@@ -11,6 +11,7 @@ router.get('/', EventsController.getAllEvents);
 router.get('/categories', EventsController.getEventsByCategory);
 router.get('/recent', EventsController.getRecentEvents);
 router.get('/upcoming', EventsController.getUpcomingEvents);
+router.get('/registerEvent', EventsController.registerEvent);
 router.get('/today', EventsController.getTodayEvents);
 router.get('/:id', EventsController.getEventsById);
 router.delete('/:id', EventsController.DeleteEventsById);

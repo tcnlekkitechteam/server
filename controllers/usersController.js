@@ -33,6 +33,59 @@ const joinDepartment = async (req, res) => {
   }
 };
 
+const deleteUserAccount = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    console.log(userId)
+
+    const validAccount = await User.findById(userId);
+    if (!validAccount) {
+      res.send({ message: "User Account not found" }).status(404);
+    }
+
+    await User.findByIdAndDelete(userId);
+    res.send({ message: "Account Deleted Successfully" }).status(200);
+  } catch (err) {
+    res.status(400).json({ err});
+  }
+};
+
+const updateUserAccount = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const validAccount = await User.findById(userId);
+    if (!validAccount) {
+      res.send({ message: "User Account not found" }).status(404);
+    }
+
+    await User.findByIdAndUpdate(userId, { ...req.body });
+    res.send({ message: "Account Updated Successfully" }).status(200);
+  } catch (err) {
+    res.status(503).json({ err });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error('Error fetching user:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   joinDepartment,
+  deleteUserAccount,
+  updateUserAccount,
+  getUserById
 };
