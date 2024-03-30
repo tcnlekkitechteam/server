@@ -76,14 +76,14 @@ const getUserById = async (req, res) => {
     }
 
     const department = await Department.findById(user.department.id);
-    if (!department) {
-      return res.status(404).json({ message: "Department not found" });
-    }
+    // if (!department) {
+    //   return res.status(404).json({ message: "Department not found" });
+    // }
 
     const userWithDepartment = {
       ...user.toObject(),
       department: {
-        name: department.name,
+        name: department.name ? department.name : null,
         id: department._id
       }
     };
