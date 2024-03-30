@@ -83,7 +83,7 @@ const getUserById = async (req, res) => {
     const userWithDepartment = {
       ...user.toObject(),
       department: {
-        name: department.name,
+        deptName: department.name,
         id: department._id
       }
     };
