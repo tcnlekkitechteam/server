@@ -71,30 +71,17 @@ const getUserById = async (req, res) => {
     const { userId } = req.params;
 
     const user = await User.findById(userId);
+    
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const department = await Department.findById(user.department.id);
-    // if (!department) {
-    //   return res.status(404).json({ message: "Department not found" });
-    // }
-
-    const userWithDepartment = {
-      ...user.toObject(),
-      department: {
-        name: department.name,
-        id: department._id
-      }
-    };
-
-    res.status(200).json(userWithDepartment);
+    res.status(200).json({ user });
   } catch (err) {
     console.error('Error fetching user:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-
 
 module.exports = {
   joinDepartment,
