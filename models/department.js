@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 const departmentSchema = new mongoose.Schema({
+    none: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    liveStream: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     w2media: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     childrenChurch: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     pastoralCareTeam: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

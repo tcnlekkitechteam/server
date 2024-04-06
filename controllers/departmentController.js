@@ -28,7 +28,7 @@ exports.saveUserToDepartment = async (req, res) => {
             "w2media", "childrenChurch", "pastoralCareTeam", "trafficControl",
             "ushering", "technicalAndSound", "praiseTeam", "teensChurch",
             "infoDesk", "venueManagement", "medicalTeam", "sundaySchool",
-            "camera", "baptismal", "contentAndSocialMedia", "pos"
+            "camera", "baptismal", "contentAndSocialMedia", "liveStream", "none", "pos"
         ];
 
         if (!validDepartments.includes(department)) {
