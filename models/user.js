@@ -4,7 +4,14 @@ const crypto = require("crypto");
 // user schema
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    surName: {
+      type: String,
+      trim: true,
+      required: true,
+      max: 50,
+    },
+
+    firstName: {
       type: String,
       trim: true,
       required: true,
@@ -107,7 +114,8 @@ const userSchema = new mongoose.Schema(
           'sundaySchool', 
           'camera', 
           'baptismal', 
-          'contentAndSocialMedia', 
+          'contentAndSocialMedia',
+          'liveStream', 
           'pos'
       ],
       trim: true,

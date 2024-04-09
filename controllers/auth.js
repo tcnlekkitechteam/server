@@ -13,7 +13,20 @@ const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
 exports.signup = async (req, res) => {
   try {
-      const { name, email, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, password, consent } = req.body;
+      const { 
+        surName, 
+        firstName, 
+        email, 
+        phoneNumber, 
+        birthDay, 
+        ageGroup, 
+        industry, 
+        department, 
+        gender, 
+        maritalStatus, 
+        password, 
+        consent 
+      } = req.body;
 
        // Check if the email already exists
        const existingUser = await User.findOne({ email });
@@ -28,7 +41,8 @@ exports.signup = async (req, res) => {
       const hashed_password = await bcrypt.hash(password, 10);
 
       const user = new User({ 
-          name, 
+          surName,
+          firstName, 
           email, 
           phoneNumber, 
           birthDay, 
@@ -91,7 +105,8 @@ exports.accountActivation = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
 
     const {
-      name,
+      surName,
+      firstName,
       email,
       phoneNumber,
       birthDay,
@@ -105,7 +120,8 @@ exports.accountActivation = async (req, res) => {
     } = jwt.decode(token);
 
     const user = new User({
-      name,
+      surName,
+      firstName,
       email,
       phoneNumber,
       birthDay,
@@ -253,12 +269,12 @@ exports.signin = async (req, res) => {
     });
 
     // Destructure user details for response
-    const { _id, name, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role } = user;
+    const { _id, surName, firstName, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role } = user;
 
-    // Return token, user details, and verification status in response
+    // To return token, user details, and verification status in response
     return res.json({
       accessToken,
-      user: { _id, name, email, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role, verified: user.verified }
+      user: { _id, surName, firstName, email, phoneNumber, birthDay, ageGroup, industry, department, gender, maritalStatus, role, verified: user.verified }
     });
   } catch (err) {
     console.error('SIGNIN ERROR', err);

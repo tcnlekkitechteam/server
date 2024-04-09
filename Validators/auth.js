@@ -9,10 +9,14 @@ const isBoolean = value => {
 };
 
 exports.userSignupValidator = [
-    check('name')
+    check('surName')
         .not()
         .isEmpty()
-        .withMessage('Your name is required'),
+        .withMessage('Your surname is required'),
+    check('firstName')
+        .not()
+        .isEmpty()
+        .withMessage('Your firstName is required'),    
     check('ageGroup')
         .not()
         .isEmpty()
@@ -55,11 +59,16 @@ exports.userSigninValidator = [
 ];
 
 exports.userUpdateValidator = [
-    check('name')
+    check('surName')
       .optional()
       .not()
       .isEmpty()
-      .withMessage('Your name is required'),
+      .withMessage('Your surname is required'),
+    check('firstName')
+      .optional()
+      .not()
+      .isEmpty()
+      .withMessage('Your firstname is required'),
     check('ageGroup')
       .optional()
       .not()
