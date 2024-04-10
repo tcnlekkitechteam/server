@@ -16,7 +16,8 @@ const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 exports.signup = async (req, res) => {
   try {
     const {
-      name,
+      surName,
+      firstName,
       email,
       phoneNumber,
       birthDay,
@@ -53,7 +54,8 @@ exports.signup = async (req, res) => {
     const hashed_password = await bcrypt.hash(password, 10);
 
     const user = new User({
-      name,
+      surName,
+      firstName,
       email,
       phoneNumber,
       birthDay,
@@ -122,7 +124,8 @@ exports.accountActivation = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
 
     const {
-      name,
+      surName,
+      firstName,
       email,
       phoneNumber,
       birthDay,
@@ -136,7 +139,8 @@ exports.accountActivation = async (req, res) => {
     } = jwt.decode(token);
 
     const user = new User({
-      name,
+      surName,
+      firstName,
       email,
       phoneNumber,
       birthDay,
@@ -293,7 +297,8 @@ exports.signin = async (req, res) => {
     // Destructure user details for response
     const {
       _id,
-      name,
+      surName,
+      firstName,
       phoneNumber,
       birthDay,
       ageGroup,
@@ -312,7 +317,8 @@ exports.signin = async (req, res) => {
       // refreshToken, // Sending the refresh token alongside the access token
       user: {
         _id,
-        name,
+        surName,
+        firstName,
         email,
         phoneNumber,
         birthDay,

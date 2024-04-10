@@ -5,7 +5,13 @@ const { ObjectId } = require("mongodb");
 // user schema
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    surName: {
+      type: String,
+      trim: true,
+      required: true,
+      max: 50,
+    },
+    firstName: {
       type: String,
       trim: true,
       required: true,
@@ -77,22 +83,24 @@ const userSchema = new mongoose.Schema(
     industry: {
       type: String,
       enum: [
-        "Banking and Finance",
+        "Finance and Investment",
         "Agriculture",
         "Education and Training",
         "Consulting",
         "Medical",
         "Trade and Commerce",
-        "Oil and Gas",
+        "Power and Energy",
         "Technology",
         "Arts and Entertainment",
         "Legal",
-        "Politics",
+        "Public Sector",
         "Telecoms",
-        "Energy",
         "Manufacturing",
         "Media and Advertising",
         "Small Business",
+        "Logistics",
+        "Mining",
+        "Hospitality",
         "Others",
       ],
       trim: true,
