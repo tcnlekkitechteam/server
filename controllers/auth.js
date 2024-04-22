@@ -32,25 +32,23 @@ exports.signup = async (req, res) => {
 
     // Check if the email already exists
     const existingUser = await User.findOne({ email });
-    let validDepartment;
-    if (department) {
-      validDepartment = await Department.findById(
-        new mongoose.Types.ObjectId(department)
-      );
-      if (!validDepartment) {
-        res.status(400).json({
-          message: "Department not recognized.",
-        });
-      }
-    }
-
     if (existingUser) {
       return res.status(400).json({
         error: "Email is already taken. Please sign up with a different email.",
       });
     }
 
-    // Hash the password
+    // Validate department if provided
+    let validDepartment;
+    if (department) {
+      validDepartment = await Department.findById(department);
+      if (!validDepartment) {
+        return res.status(400).json({
+          error: "Department not recognized.",
+        });
+      }
+    }
+
     const hashed_password = await bcrypt.hash(password, 10);
 
     const user = new User({
@@ -63,7 +61,7 @@ exports.signup = async (req, res) => {
       industry,
       gender,
       maritalStatus,
-      hashed_password, // Set the hashed password
+      hashed_password,
       consent,
     });
 
@@ -111,68 +109,6 @@ exports.signup = async (req, res) => {
   }
 };
 
-exports.accountActivation = async (req, res) => {
-  try {
-    const { token } = req.body;
-
-    if (!token) {
-      return res.status(400).json({
-        message: "Please provide a valid token for account activation!",
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
-
-    const {
-      surName,
-      firstName,
-      email,
-      phoneNumber,
-      birthDay,
-      ageGroup,
-      industry,
-      department,
-      gender,
-      maritalStatus,
-      password,
-      consent,
-    } = jwt.decode(token);
-
-    const user = new User({
-      surName,
-      firstName,
-      email,
-      phoneNumber,
-      birthDay,
-      ageGroup,
-      industry,
-      department,
-      gender,
-      maritalStatus,
-      password,
-      consent,
-    });
-
-    const savedUser = await user.save();
-
-    res.status(201).json({
-      message: "Signup successful. You can sign in now.",
-      // user: savedUser,
-    });
-  } catch (error) {
-    console.error("Account Activation Error:", error);
-
-    if (error.name === "TokenExpiredError") {
-      res.status(401).json({
-        error: "Sorry, the link has expired. Kindly signup again",
-      });
-    } else {
-      res.status(401).json({
-        error: "Error during account activation. Try signup again.",
-      });
-    }
-  }
-};
 
 exports.accountActivation = async (req, res) => {
   try {
@@ -185,10 +121,8 @@ exports.accountActivation = async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION);
-
     const { userId } = decoded;
 
-    // Check if the token is still within the activation window (1 day)
     const user = await User.findById(userId);
 
     if (!user) {
@@ -197,28 +131,37 @@ exports.accountActivation = async (req, res) => {
       });
     }
 
-    // If activation is done within 1 day, set user's verified status to true
+    if (user.verified) {
+      return res.status(400).json({
+        error: "Account already activated",
+      });
+    }
+
+    // Set user's verified status to true
     user.verified = true;
     await user.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Account activated successfully. You can sign in now.",
     });
   } catch (error) {
     console.error("Account Activation Error:", error);
 
+    // Handle token expiration error separately
     if (error.name === "TokenExpiredError") {
-      res.status(401).json({
+      return res.status(401).json({
         error: "Sorry, the activation link has expired. Please sign up again.",
       });
-    } else {
-      res.status(401).json({
-        error:
-          "Error during account activation. Please try again or sign up again.",
-      });
     }
+
+    // Handle other errors during activation
+    return res.status(401).json({
+      error:
+        "Error during account activation. Please try again or sign up again.",
+    });
   }
 };
+
 
 // Function to delete unactivated users after 7 days
 const deleteUnactivatedUsers = async () => {
@@ -338,64 +281,6 @@ exports.signin = async (req, res) => {
     });
   }
 };
-// exports.signin = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     // To check if user exists
-//     const user = await User.findOne({ email }).exec();
-
-//     if (!user) {
-//       return res.status(400).json({
-//         error: "User with that email does not exist, please sign up",
-//       });
-//     }
-
-//     // To authenticate
-//     if (!user.authenticate(password)) {
-//       return res.status(400).json({
-//         error: "Email and password do not match",
-//       });
-//     }
-
-//     // To generate a token and send to user client/user
-//     const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
-//       expiresIn: "7d",
-//     });
-//     const {
-//       userId,
-//       name,
-//       phoneNumber,
-//       birthDay,
-//       ageGroup,
-//       industry,
-//       gender,
-//       maritalStatus,
-//       role,
-//     } = user;
-
-//     return res.json({
-//       token,
-//       user: {
-//         userId,
-//         name,
-//         email,
-//         phoneNumber,
-//         birthDay,
-//         ageGroup,
-//         industry,
-//         gender,
-//         maritalStatus,
-//         role,
-//       },
-//     });
-//   } catch (err) {
-//     console.error("SIGNIN ERROR", err);
-//     res.status(500).json({
-//       error: "Internal Server Error",
-//     });
-//   }
-// };
 
 // New function for updating user details
 exports.updateUser = async (req, res) => {
@@ -679,32 +564,3 @@ exports.changePassword = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
-// // To delete a user
-// exports.deleteUser = async (req, res) => {
-//     try {
-//         // Extract user ID from the request parameters
-//         const userId = req.params.userId;
-
-//         // Check if the user exists
-//         const user = await User.findById(userId);
-
-//         if (!user) {
-//             return res.status(404).json({
-//                 error: 'User not found'
-//             });
-//         }
-
-//         // Delete the user
-//         await User.deleteOne({_id: userId});
-
-//         return res.json({
-//             message: 'User has been deleted successfully'
-//         });
-//     } catch (err) {
-//         console.error('DELETE USER ERROR', err);
-//         res.status(500).json({
-//             error: 'Internal Server Error'
-//         });
-//     }
-// };

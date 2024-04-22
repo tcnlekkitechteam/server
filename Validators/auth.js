@@ -1,105 +1,37 @@
-const {check} = require('express-validator');
+const { check } = require('express-validator');
 
 // Custom validator for consent to check if it's a boolean
 const isBoolean = value => {
   if (typeof value !== 'boolean') {
-      throw new Error('Consent must be a boolean value');
+    throw new Error('Consent must be a boolean value');
   }
   return true;
 };
 
+const commonRules = [
+  check('surName').notEmpty().withMessage('Your surname is required'),
+  check('firstName').notEmpty().withMessage('Your firstname is required'),
+  check('ageGroup').notEmpty().withMessage('Age group is required'),
+  check('birthDay').notEmpty().withMessage('Your birthday:(dd/mm) is required'),
+  check('gender').notEmpty().withMessage('Your gender is required'),
+  check('phoneNumber').notEmpty().withMessage('Your phone number is required'),
+  check('maritalStatus').notEmpty().withMessage('Your marital status is required'),
+  check('email').isEmail().withMessage('Must be a valid email address'),
+  check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+];
+
 exports.userSignupValidator = [
-    check('surName')
-        .not()
-        .isEmpty()
-        .withMessage('Your surname is required'),
-    check('firstName')
-        .not()
-        .isEmpty()
-        .withMessage('Your firstname is required'),
-    check('ageGroup')
-        .not()
-        .isEmpty()
-        .withMessage('Age group is required'),
-    check('birthDay')
-        .not()
-        .isEmpty()
-        .withMessage('Your birthday:(dd/mm) is required'),
-    check('gender')
-        .not()
-        .isEmpty()
-        .withMessage('Your gender is required'),
-    check('consent')
-        .custom(isBoolean)
-        .withMessage('Your consent must be a boolean value'),
-    check('phoneNumber')
-        .not()
-        .isEmpty()
-        .withMessage('Your phone number is required'),
-    check('maritalStatus')
-        .not()
-        .isEmpty()
-        .withMessage('Your marital status is required'),
-    check('email')
-        .isEmail()
-        .withMessage('Must be a valid email address'),
-    check('password')
-        .isLength({min: 6})
-        .withMessage('We are sorry but your Password must be at least 6 character'),
+  ...commonRules,
+  check('consent').custom(isBoolean).withMessage('Your consent must be a boolean value'),
 ];
 
 exports.userSigninValidator = [
-    check('email')
-        .isEmail()
-        .withMessage('Must be a valid email address'),
-   
-    check('password')
-        .isLength({min: 6})
-        .withMessage('We are sorry but your Password must be at least 6 character'),
+  check('email').isEmail().withMessage('Must be a valid email address'),
+  check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
 ];
 
 exports.userUpdateValidator = [
-    check('surName')
-      .optional()
-      .not()
-      .isEmpty()
-      .withMessage('Your surname is required'),
-    check('firstName')
-      .optional()
-      .not()
-      .isEmpty()
-      .withMessage('Your firstname is required'),
-    check('ageGroup')
-      .optional()
-      .not()
-      .isEmpty()
-      .withMessage('Age group is required'),
-    check('birthDay')
-      .optional()
-      .not()
-      .isEmpty()
-      .withMessage('Your birthday:(dd/mm) is required'),
-    check('gender')
-      .optional()
-      .not()
-      .isEmpty()
-      .withMessage('Your gender is required'),
-    check('phoneNumber')
-      .optional()
-      .not()
-      .isEmpty()
-      .withMessage('Your phone number is required'),
-    check('maritalStatus')
-      .optional()
-      .not()
-      .isEmpty()
-      .withMessage('Your marital status is required'),
-    check('email')
-      .optional()
-      .isEmail()
-      .withMessage('Must be a valid email address'),
-    check('password')
-      .optional()
-      .isLength({ min: 6 })
-      .withMessage('Password must be at least 6 characters'),
-  ];
+  ...commonRules.map(rule => rule.optional()),
+  check('email').optional().isEmail().withMessage('Must be a valid email address'),
+  check('password').optional().isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+];
