@@ -8,13 +8,13 @@ const userSchema = new mongoose.Schema(
     surName: {
       type: String,
       trim: true,
-      required: true,
+      required: false,
       max: 50,
     },
     firstName: {
       type: String,
       trim: true,
-      required: true,
+      required: false,
       max: 50,
     },
     roles: {
