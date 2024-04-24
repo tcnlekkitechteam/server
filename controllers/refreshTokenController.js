@@ -10,23 +10,38 @@ const handleRefreshToken = async (req, res) => {
   const foundUser = await User.findOne({ refreshToken }).exec();
   if (!foundUser) return res.sendStatus(403); //Forbidden
 
-  // evaluate jwt
+  // Verify the refresh token
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
     if (err || foundUser.email !== decoded.email) return res.sendStatus(403);
 
+    // Generate a new access token
     const accessToken = jwt.sign(
-      {
-        UserInfo: {
-          username: foundUser.name,
-          userId: foundUser.userId,
-        },
-      },
+      { userId: foundUser._id, email: foundUser.email },
       process.env.JWT_SECRET,
       { expiresIn: "10s" }
     );
 
-    res.json({ user: getUserAuthPayload(foundUser), accessToken });
+    // Return the user details and access token
+    return res.json({
+      accessToken,
+      user: {
+        _id: foundUser._id,
+        surName: foundUser.surName,
+        firstName: foundUser.firstName,
+        email: foundUser.email,
+        phoneNumber: foundUser.phoneNumber,
+        birthDay: foundUser.birthDay,
+        ageGroup: foundUser.ageGroup,
+        industry: foundUser.industry,
+        department: foundUser.department,
+        gender: foundUser.gender,
+        maritalStatus: foundUser.maritalStatus,
+        role: foundUser.role,
+        verified: foundUser.verified,
+      },
+    });
   });
 };
 
 module.exports = { handleRefreshToken };
+
