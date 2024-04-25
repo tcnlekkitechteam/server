@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
-const { ObjectId } = require("mongodb");
+const bcrypt = require("bcrypt");
 
-// user schema
 const userSchema = new mongoose.Schema(
   {
     surName: {
@@ -35,11 +34,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
-      enum: ["Male", "Female", "Other"],
     },
     consent: {
       type: Boolean,
-      // required: false,
     },
     birthDay: {
       type: String,
@@ -49,7 +46,6 @@ const userSchema = new mongoose.Schema(
     },
     ageGroup: {
       type: String,
-      enum: ["18 - 25", "26 - 35", "36 - 45", "46 - 55", "56 and above"],
       trim: true,
       required: true,
       max: 15,
@@ -68,7 +64,6 @@ const userSchema = new mongoose.Schema(
     },
     maritalStatus: {
       type: String,
-      enum: ["Single", "Married", "Divorced", "Widowed", "Other"],
       trim: true,
       required: true,
       max: 9,
@@ -82,65 +77,28 @@ const userSchema = new mongoose.Schema(
     },
     industry: {
       type: String,
-      enum: [
-        "Finance and Investment",
-        "Agriculture",
-        "Education and Training",
-        "Consulting",
-        "Medical",
-        "Trade and Commerce",
-        "Power and Energy",
-        "Technology",
-        "Arts and Entertainment",
-        "Legal",
-        "Public Sector",
-        "Telecoms",
-        "Manufacturing",
-        "Media and Advertising",
-        "Small Business",
-        "Logistics",
-        "Mining",
-        "Hospitality",
-        "Others",
-      ],
       trim: true,
       required: false,
       max: 32,
     },
     department: {
-      name: String,
-      id: ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Department',
     },
     howDidYouHearAboutUs: {
       type: String,
-      enum: [
-        "Billboards",
-        "Social media",
-        "Friends and family",
-        "TV-Radio-Print Media",
-        "TCN Event",
-        "Spirit Led",
-        "Others",
-      ],
       trim: true,
       required: false,
-      maax: 50,
+      max: 50,
     },
     nextSteps: {
       type: String,
-      enum: [
-        "Be born Again",
-        "Be baptized",
-        "Join a discipleship class",
-        "Speak in tongues",
-      ],
       trim: true,
       required: false,
       max: 32,
     },
     getInvolved: {
       type: String,
-      enum: ["Become a member", "Joining a service unit", "Follow online only"],
       trim: true,
       required: false,
       max: 32,
@@ -162,10 +120,9 @@ const userSchema = new mongoose.Schema(
     resetPasswordToken: String,
     resetPasswordExpires: Date,
   },
-
   { timestamps: true }
 );
-// virtual
+
 userSchema
   .virtual("password")
   .set(function (password) {
@@ -173,12 +130,10 @@ userSchema
     this.salt = this.makeSalt();
     this.hashed_password = this.encryptPassword(password);
   })
-
   .get(function () {
     return this._password;
   });
 
-// methods
 userSchema.methods = {
   authenticate: function (plainText) {
     return this.encryptPassword(plainText) === this.hashed_password;
