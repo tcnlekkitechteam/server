@@ -142,10 +142,8 @@ userSchema.methods = {
   encryptPassword: function (password) {
     if (!password) return "";
     try {
-      return crypto
-        .createHmac("sha1", this.salt)
-        .update(password)
-        .digest("hex");
+      const saltRounds = 10; // Number of salt rounds for hashing
+      return bcrypt.hashSync(password, saltRounds);
     } catch (err) {
       return "";
     }
