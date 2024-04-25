@@ -3,6 +3,7 @@ const router = express.Router();
 const EventsController = require('../../controllers/eventsController');
 const verifyRoles = require("../../middlewares/verifyRoles");
 const ROLES_LIST = require("../../config/roles_list");
+const eventController = require('../../controllers/eventsController');
 
 
 
@@ -14,6 +15,7 @@ router.get('/upcoming', EventsController.getUpcomingEvents);
 router.get('/registerEvent', EventsController.registerEvent);
 router.get('/today', EventsController.getTodayEvents);
 router.get('/:id', EventsController.getEventsById);
+router.get('/events/:id/registration-link', eventController.getRegistrationLink);
 router.delete('/:id', EventsController.DeleteEventsById);
 router.put('/:id', verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor), EventsController.updateEvent);
 router.get('/event-health-check', (req, res) => {
