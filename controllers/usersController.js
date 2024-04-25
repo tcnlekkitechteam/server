@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const Department = require("../models/DepartmentModel");
 const { default: mongoose } = require("mongoose");
+const { dropdownOptions } = require("../utils/constant");
 
 const joinDepartment = async (req, res) => {
   const { userID, departmentID } = req.body;
@@ -95,9 +96,14 @@ const getUserById = async (req, res) => {
   }
 };
 
+  const getDropdownOptions = (req, res) => {
+    res.json(dropdownOptions);
+  };
+
 module.exports = {
   joinDepartment,
   deleteUserAccount,
   updateUserAccount,
-  getUserById
+  getUserById,
+  getDropdownOptions
 };
