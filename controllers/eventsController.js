@@ -222,3 +222,21 @@ exports.getRegistrationLink = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+exports.getVolunteerLink = async (req, res) => {
+  try {
+    if (!req.params.id) {
+      return res.status(400).json({ message: "Event ID required." });
+    }
+
+    const event = await Event.findOne({ _id: req.params.id }).exec();
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    res.status(200).json({ volunteerLink: event.volunteerLink });
+  } catch (err) {
+    console.error('Error getting volunteer link:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
