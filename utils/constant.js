@@ -1,4 +1,45 @@
  const dropdownOptions = {
+  howDidYouHearAboutUs: [
+    "Billboards",
+    "Social media",
+    "Friends and family",
+    "TV-Radio-Print Media",
+    "TCN Event",
+    "Spirit Led",
+    "Others"
+  ],
+  industry: [
+    "Finance and Investment",
+    "Agriculture",
+    "Education and Training",
+    "Consulting",
+    "Medical",
+    "Trade and Commerce",
+    "Power and Energy",
+    "Technology",
+    "Arts and Entertainment",
+    "Legal",
+    "Public Sector",
+    "Telecoms",
+    "Manufacturing",
+    "Media and Advertising",
+    "Small Business",
+    "Logistics",
+    "Mining",
+    "Hospitality",
+    "Others"
+  ],
+  nextSteps: [
+    "Be born Again",
+    "Be baptized",
+    "Join a discipleship class",
+    "Speak in tongues"
+  ],
+  getInvolved: [
+    "Become a member",
+    "Joining a service unit",
+    "Follow online only"
+  ],
   genders: ['Male', 'Female', 'Other'],
   ageGroups: ['18 - 25', '26 - 35', '36 - 45', '46 - 55', '56 and above'],
   maritalStatuses: ['Single', 'Married', 'Divorced', 'Widowed', 'Other'],
