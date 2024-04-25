@@ -82,8 +82,8 @@ const userSchema = new mongoose.Schema(
       max: 32,
     },
     department: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
+      name: String,
+      id: ObjectId,
     },
     howDidYouHearAboutUs: {
       type: String,
