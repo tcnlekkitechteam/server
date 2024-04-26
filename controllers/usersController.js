@@ -87,7 +87,7 @@ const getUserById = async (req, res) => {
         deptName: department?.name ?  department?.name : null,
         id: user?.department?.id || department?._id
       },
-      area: user?.residentialArea
+      area: user?.residentialArea ?? ''
     };
 
     res.status(200).json(userWithDepartment);
