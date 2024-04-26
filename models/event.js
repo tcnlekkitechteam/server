@@ -15,7 +15,11 @@ const eventSchema = new mongoose.Schema({
   },
   registrationLink: {
     type: String,
-    required: true
+    required: false
+  },
+  volunteerLink: {
+    type: String,
+    required: false
   },
   image: {
     type: String,
