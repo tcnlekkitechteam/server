@@ -64,7 +64,6 @@
     'New Road',
     'Ologolo',
     'Oniru',
-    'Oniru',
     'Outside Lagos',
     'Outside Nigeria',
     'Salem',
