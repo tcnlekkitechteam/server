@@ -88,8 +88,19 @@ exports.signup = async (req, res) => {
       To: email,
       Subject: "Account Activation Link",
       HtmlBody: `
-              <h1>Please use the following link to activate your account within 24 hours.</h1>
-              <p>${process.env.CLIENT_URL}/activate-account?token=${token}</p>
+              <h1>Welcome to the TCN Lekki Information Portal</h1>
+              <p>Hi ${user.firstName},<br>I am pleased to welcome you to the TCN Lekki Information Portal. It's a platform we have carefully designed to enhance your experience as a member of the Lekki campus of The Covenant Nation.
+              Kindly click on the link below to activate your account and complete your sign up process within 24 hours.<br>
+              ${process.env.CLIENT_URL}/activate-account?token=${token} <br>
+              Joining the TCN Lekki information Platform will give you access to regular updates and draw you into
+              an immersive church-life experience that will provide support for your spiritual growth.
+              I encourage you to take advantage of this platform by filling your correct information, verifying your
+              email where applicable and visiting this portal regularly to connect with the church community. We also
+               look forward to feedback on how we can improve church life at TCN Lekki.<br> Once again, welcome aboard.<br>
+               Grace is multiplied in your favor!<br>
+               Best regards,<br>
+               Pastor Tayo Osiyemi </p>
+              
               <hr/>
               <p>This email may contain sensitive information</p>
               <p>${process.env.CLIENT_URL}</p>
