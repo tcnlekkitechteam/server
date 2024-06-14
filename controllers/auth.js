@@ -23,6 +23,7 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
+      area,
       gender,
       maritalStatus,
       password,
@@ -59,6 +60,7 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
+      area,
       gender,
       maritalStatus,
       hashed_password,
@@ -257,6 +259,7 @@ exports.signin = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
+      area,
       department,
       gender,
       maritalStatus,
@@ -278,6 +281,7 @@ exports.signin = async (req, res) => {
         birthDay,
         ageGroup,
         industry,
+        area,
         department,
         gender,
         maritalStatus,
@@ -468,7 +472,7 @@ exports.countUsers = async (req, res) => {
 // Function to filter users
 exports.filterUsers = async (req, res) => {
   try {
-    const { maritalStatus, industry, gender, ageGroup, department } = req.query;
+    const { maritalStatus, industry, gender, ageGroup, department, area } = req.query;
     const filter = {};
 
     // Add filters if they are provided
@@ -491,7 +495,10 @@ exports.filterUsers = async (req, res) => {
     if (ageGroup) {
       filter.ageGroup = ageGroup;
     }
-
+    
+    if (area) {
+      filter.area = area;
+    }
     const users = await User.find(
       filter,
       "-password -salt -resetPasswordToken -resetPasswordExpires -resetPasswordLink -hashed_password"

@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       max: 15,
     },
-    residentialArea: {
+    area: {
       type: String,
       trim: true,
       required: false,
@@ -92,6 +92,12 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: false,
       max: 50,
+    },
+    whyDidYouJoinTcnLekki: {
+      type: String,
+      trim: true,
+      required: false,
+      max: 150,
     },
     nextSteps: {
       type: String,
