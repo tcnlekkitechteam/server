@@ -1,76 +1,136 @@
 const Department = require("../models/DepartmentModel");
 
 const getDepartments = async (req, res) => {
-  const departments = await Department.find();
-  if (!departments)
-    return res.status(204).json({ message: "No department found." });
-  res.json(departments);
+  try {
+    const departments = await Department.find();
+    if (!departments || departments.length === 0) {
+      return res.status(204).json({ message: "No departments found." });
+    }
+    res.json(departments);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error." });
+  }
 };
 
 const createDepartment = async (req, res) => {
-  if (!req?.body?.name || !req?.body?.description || !req?.body?.imgURL) {
-    return res
-      .status(400)
-      .json({
+  try {
+    if (!req?.body?.name || !req?.body?.description || !req?.body?.imgURL) {
+      return res.status(400).json({
         message: "Department name, description and imgURL are required",
       });
-  }
+    }
 
-  try {
     const result = await Department.create({
       name: req.body.name,
       description: req.body.description,
+      imgURL: req.body.imgURL,
     });
 
     res.status(201).json(result);
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
 const updateDepartment = async (req, res) => {
-  if (!req?.body?.id) {
-    return res.status(400).json({ message: "Department ID is required." });
-  }
+  try {
+    if (!req?.body?.id) {
+      return res.status(400).json({ message: "Department ID is required." });
+    }
 
-  const department = await Department.findOne({ _id: req.body.id }).exec();
-  if (!department) {
-    return res
-      .status(204)
-      .json({ message: `No department matches ID ${req.body.id}.` });
+    const department = await Department.findOne({ _id: req.body.id }).exec();
+    if (!department) {
+      return res
+        .status(204)
+        .json({ message: `No department matches ID ${req.body.id}.` });
+    }
+
+    if (req.body?.name) department.name = req.body.name;
+    if (req.body?.description) department.description = req.body.description;
+    
+    const result = await department.save();
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error." });
   }
-  if (req.body?.name) department.name = req.body.name;
-  if (req.body?.description) department.description = req.body.description;
-  const result = await department.save();
-  res.json(result);
 };
 
 const deleteDepartment = async (req, res) => {
-  if (!req?.params?.id)
-    return res.status(400).json({ message: "Department ID required." });
+  try {
+    if (!req?.params?.id) {
+      return res.status(400).json({ message: "Department ID required." });
+    }
 
-  const department = await Department.findOne({ _id: req.params.id }).exec();
-  if (!department) {
-    return res
-      .status(204)
-      .json({ message: `No department matches ID ${req.params.id}.` });
+    const department = await Department.findOne({ _id: req.params.id }).exec();
+    if (!department) {
+      return res
+        .status(204)
+        .json({ message: `No department matches ID ${req.params.id}.` });
+    }
+
+    const result = await department.deleteOne({ _id: req.params.id });
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error." });
   }
-  const result = await department.deleteOne({ _id: req.params.id });
-  res.json(result);
 };
 
 const getDepartment = async (req, res) => {
-  if (!req?.params?.id)
-    return res.status(400).json({ message: "Department ID required." });
+  try {
+    if (!req?.params?.id) {
+      return res.status(400).json({ message: "Department ID required." });
+    }
 
-  const department = await Department.findOne({ _id: req.params.id }).exec();
-  if (!department) {
-    return res
-      .status(204)
-      .json({ message: `No department matches ID ${req.params.id}.` });
+    const department = await Department.findOne({ _id: req.params.id }).exec();
+    if (!department) {
+      return res
+        .status(204)
+        .json({ message: `No department matches ID ${req.params.id}.` });
+    }
+
+    res.json(department);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error." });
   }
-  res.json(department);
 };
+
+const joinConnectGroup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!id || !userId) {
+      return res.status(400).json({ message: "Department ID and User ID are required." });
+    }
+
+    const department = await Department.findById(id);
+    if (!department) {
+      return res.status(404).json({ message: `Department not found with ID ${id}.` });
+    }
+
+    // Check if the user is already in connectGroups (optional, depending on your logic)
+    if (department.connectGroups.includes(userId)) {
+      return res.status(400).json({ message: "User already in connectGroups." });
+    }
+
+    // Add the user to connectGroups
+    department.connectGroups.push(userId);
+
+    // Save the updated department
+    const updatedDepartment = await department.save();
+
+    res.json(updatedDepartment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 
 module.exports = {
   getDepartments,
@@ -78,4 +138,5 @@ module.exports = {
   updateDepartment,
   deleteDepartment,
   getDepartment,
+  joinConnectGroup,
 };

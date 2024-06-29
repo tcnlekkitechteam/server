@@ -22,4 +22,9 @@ router
 
 router.route("/:id").get(departmentsController.getDepartment);
 
+// New route for joining connectGroups
+router
+  .route("/:id/joinConnectGroup")
+  .post(departmentsController.joinConnectGroup);
+
 module.exports = router;

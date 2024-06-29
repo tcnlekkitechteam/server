@@ -33,6 +33,7 @@ const handleRefreshToken = async (req, res) => {
         birthDay: foundUser.birthDay,
         ageGroup: foundUser.ageGroup,
         industry: foundUser.industry,
+        area: foundUser.area,
         department: foundUser.department,
         gender: foundUser.gender,
         maritalStatus: foundUser.maritalStatus,

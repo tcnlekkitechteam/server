@@ -12,9 +12,12 @@ const departmentSchema = new Schema({
   },
   imgURL: {
     type: String,
-    default:
-      "https://cdn.pixabay.com/photo/2014/05/22/22/05/photo-351528_1280.jpg",
+    default: "https://cdn.pixabay.com/photo/2014/05/22/22/05/photo-351528_1280.jpg",
   },
+  connectGroups: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User' // Replace 'User' with the actual model name referencing users
+  }]
 });
 
 module.exports = mongoose.model("Department", departmentSchema);
