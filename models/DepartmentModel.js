@@ -16,7 +16,7 @@ const departmentSchema = new Schema({
   },
   connectGroups: [{
     type: Schema.Types.ObjectId,
-    ref: 'User' // Replace 'User' with the actual model name referencing users
+    ref: 'User' // Replacing 'User' with the actual model name referencing users
   }]
 });
 
