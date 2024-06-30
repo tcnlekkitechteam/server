@@ -1,6 +1,7 @@
 function getUserAuthPayload(user) {
   const {
-    name,
+    surName,
+    firstName,
     email,
     phoneNumber,
     birthDay,
@@ -10,12 +11,14 @@ function getUserAuthPayload(user) {
     gender,
     maritalStatus,
     role,
+    connectGroup,
     department,
   } = user;
 
   return {
     userId: user._id,
-    name,
+    surName,
+    firstName,
     email,
     phoneNumber,
     birthDay,
@@ -25,6 +28,7 @@ function getUserAuthPayload(user) {
     gender,
     maritalStatus,
     role,
+    connectGroup,
     department,
   };
 }
