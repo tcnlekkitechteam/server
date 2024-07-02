@@ -13,6 +13,7 @@ const cookieParser = require("cookie-parser");
 const errorHandler = require("./middlewares/errorHandler");
 const Feedback = require("./models/feedback.model.js");
 const PrayerRequest = require("./models/prayerRequest.model.js"); // Import the PrayerRequest model
+const moment = require("moment");
 const app = express();
 const port = process.env.PORT || 8000;
 
@@ -116,6 +117,19 @@ app.post("/api/prayer-requests", async (req, res) => {
       });
     }
 
+    // Check if user has already submitted a prayer request in the last 24 hours
+    const yesterday = moment().subtract(1, 'days');
+    const existingRequest = await PrayerRequest.findOne({
+      name,
+      createdAt: { $gte: yesterday.toDate() }
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({
+        error: `${name} you have already submitted a prayer request today. Please try again tomorrow.`
+      });
+    }
+
     // Save prayer request to MongoDB
     const newPrayerRequest = new PrayerRequest({
       name,
@@ -124,7 +138,7 @@ app.post("/api/prayer-requests", async (req, res) => {
     await newPrayerRequest.save();
 
     // Send a response
-    return res.status(201).json({ message: "Prayer request submitted successfully" });
+    return res.status(201).json({ message: `${name}, your prayer request submitted successfully` });
   } catch (error) {
     console.error("Prayer Request Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
