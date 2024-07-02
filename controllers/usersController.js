@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Department = require("../models/DepartmentModel");
+const ConnectGroup = require("../models/ConnectGroupModel")
 const { default: mongoose } = require("mongoose");
 const { dropdownOptions } = require("../utils/constant");
 
@@ -31,6 +32,62 @@ const joinDepartment = async (req, res) => {
     }
   } else {
     res.status(404).json({ message: "Department not recognized" });
+  }
+};
+
+const joinConnectGroup = async (req, res) => {
+  const { userID, ConnectGroupID } = req.body;
+  let validConnectGroup = await ConnectGroup.findById(
+    new mongoose.Types.ObjectId(ConnectGroupID)
+  );
+
+  if (!userID)
+    res.status(400).json({ message: "Invalid or no user id detected!" });
+
+  if (validConnectGroup) {
+    try {
+      const user = await User.findOneAndUpdate(
+        { _id: userID },
+        {
+          ConnectGroup: {
+            name: validConnectGroup.name,
+            id: validConnectGroup._id,
+          },
+        }
+      );
+      res.status(200).json({
+        message: "Action successfull!",
+      });
+    } catch (e) {
+      res.status(400).json({ err: e });
+    }
+  } else {
+    res.status(404).json({ message: "connectGroup not recognized" });
+  }
+};
+
+const createConnectGroup = async (req, res) => {
+  try {
+    const { name, description, imgURL } = req.body;
+
+    // Check if required fields are provided
+    if (!name || !description || !imgURL) {
+      return res.status(400).json({
+        message: "ConnectGroup name, description, and imgURL are required",
+      });
+    }
+
+    // Create new ConnectGroup
+    const newConnectGroup = await ConnectGroup.create({
+      name,
+      description,
+      imgURL,
+    });
+
+    res.status(201).json(newConnectGroup);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
@@ -103,6 +160,8 @@ const getUserById = async (req, res) => {
 
 module.exports = {
   joinDepartment,
+  joinConnectGroup,
+  createConnectGroup,
   deleteUserAccount,
   updateUserAccount,
   getUserById,

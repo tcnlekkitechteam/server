@@ -26,8 +26,10 @@ exports.signup = async (req, res) => {
       area,
       gender,
       maritalStatus,
+      whyDidYouJoinTcnLekki,
       password,
       department,
+      updateConsent,
       consent,
     } = req.body;
 
@@ -63,7 +65,9 @@ exports.signup = async (req, res) => {
       area,
       gender,
       maritalStatus,
+      whyDidYouJoinTcnLekki,
       hashed_password,
+      updateConsent,
       consent,
     });
 
@@ -263,6 +267,7 @@ exports.signin = async (req, res) => {
       department,
       gender,
       maritalStatus,
+      whyDidYouJoinTcnLekki,
       role,
       roles,
     } = user;
@@ -285,6 +290,7 @@ exports.signin = async (req, res) => {
         department,
         gender,
         maritalStatus,
+        whyDidYouJoinTcnLekki,
         role,
         verified: user.verified,
       },

@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema(
     consent: {
       type: Boolean,
     },
+    updateConsent: {
+      type: Boolean,
+      required: false,
+    },
     birthDay: {
       type: String,
       trim: true,
@@ -84,6 +88,10 @@ const userSchema = new mongoose.Schema(
       max: 32,
     },
     department: {
+      name: String,
+      id: ObjectId,
+    },
+    connectGroup: {
       name: String,
       id: ObjectId,
     },
