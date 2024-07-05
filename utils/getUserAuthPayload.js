@@ -24,7 +24,7 @@ function getUserAuthPayload(user) {
     birthDay,
     ageGroup,
     industry,
-    area,
+    areas,
     gender,
     maritalStatus,
     role,
