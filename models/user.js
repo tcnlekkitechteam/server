@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
     consent: {
       type: Boolean,
     },
-    updateConsent: {
+    consentToReceiveUpdates: {
       type: Boolean,
       required: false,
     },

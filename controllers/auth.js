@@ -23,13 +23,13 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
-      area,
+      areas,
       gender,
       maritalStatus,
       whyDidYouJoinTcnLekki,
       password,
       department,
-      updateConsent,
+      consentToReceiveUpdates,
       consent,
     } = req.body;
 
@@ -62,12 +62,12 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
-      area,
+      areas,
       gender,
       maritalStatus,
       whyDidYouJoinTcnLekki,
       hashed_password,
-      updateConsent,
+      consentToReceiveUpdates,
       consent,
     });
 
@@ -263,7 +263,7 @@ exports.signin = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
-      area,
+      areas,
       department,
       gender,
       maritalStatus,
@@ -286,7 +286,7 @@ exports.signin = async (req, res) => {
         birthDay,
         ageGroup,
         industry,
-        area,
+        areas,
         department,
         gender,
         maritalStatus,
@@ -478,7 +478,7 @@ exports.countUsers = async (req, res) => {
 // Function to filter users
 exports.filterUsers = async (req, res) => {
   try {
-    const { maritalStatus, industry, gender, ageGroup, department, area } = req.query;
+    const { maritalStatus, industry, gender, ageGroup, department, areas } = req.query;
     const filter = {};
 
     // Add filters if they are provided
@@ -502,8 +502,8 @@ exports.filterUsers = async (req, res) => {
       filter.ageGroup = ageGroup;
     }
     
-    if (area) {
-      filter.area = area;
+    if (areas) {
+      filter.areas = areas;
     }
     const users = await User.find(
       filter,

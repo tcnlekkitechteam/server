@@ -43,7 +43,7 @@
   genders: ['Male', 'Female', 'Other'],
   ageGroups: ['18 - 25', '26 - 35', '36 - 45', '46 - 55', '56 and above'],
   maritalStatuses: ['Single', 'Married', 'Divorced', 'Widowed', 'Other'],
-  area: [
+  areas: [
     'Lekki Phase 1',
     'Agungi',
     'Ajah',
