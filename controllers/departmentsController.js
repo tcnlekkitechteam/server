@@ -99,37 +99,6 @@ const getDepartment = async (req, res) => {
   }
 };
 
-const joinConnectGroup = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { userId } = req.body;
-
-    if (!id || !userId) {
-      return res.status(400).json({ message: "Department ID and User ID are required." });
-    }
-
-    const department = await Department.findById(id);
-    if (!department) {
-      return res.status(404).json({ message: `Department not found with ID ${id}.` });
-    }
-
-    // Check if the user is already in connectGroups (optional, depending on your logic)
-    if (department.connectGroups.includes(userId)) {
-      return res.status(400).json({ message: "User already in connectGroups." });
-    }
-
-    // Add the user to connectGroups
-    department.connectGroups.push(userId);
-
-    // Save the updated department
-    const updatedDepartment = await department.save();
-
-    res.json(updatedDepartment);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error." });
-  }
-};
 
 
 module.exports = {
@@ -138,5 +107,4 @@ module.exports = {
   updateDepartment,
   deleteDepartment,
   getDepartment,
-  joinConnectGroup,
 };
