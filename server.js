@@ -111,34 +111,34 @@ app.post("/api/prayer-requests", async (req, res) => {
     const { name, request } = req.body;
 
     // Validation: Ensure required fields are provided
-    if (!name || !request) {
+    if (!request) {
       return res.status(400).json({
-        error: "Name and request are required fields",
+        error: "Request is a required field",
       });
     }
 
     // Check if user has already submitted a prayer request in the last 24 hours
     const yesterday = moment().subtract(1, 'days');
     const existingRequest = await PrayerRequest.findOne({
-      name,
+      name: name || "Anonymous",
       createdAt: { $gte: yesterday.toDate() }
     });
 
     if (existingRequest) {
       return res.status(400).json({
-        error: `${name} you have already submitted a prayer request today. Please try again tomorrow.`
+        error: `${name || "Anonymous"}, you have already submitted a prayer request today. Please try again tomorrow.`
       });
     }
 
     // Save prayer request to MongoDB
     const newPrayerRequest = new PrayerRequest({
-      name,
+      name: name || "Anonymous",
       request,
     });
     await newPrayerRequest.save();
 
     // Send a response
-    return res.status(201).json({ message: `${name}, your prayer request submitted successfully` });
+    return res.status(201).json({ message: `${name || "Anonymous"}, your prayer request was submitted successfully` });
   } catch (error) {
     console.error("Prayer Request Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -150,7 +150,7 @@ app.get("/api/prayer-requests", async (req, res) => {
   try {
     const prayerRequests = await PrayerRequest.find();
 
-    // Send the list of prayer requests as JSON response
+    // Send the list of prayer requests as a JSON response
     return res.status(200).json(prayerRequests);
   } catch (error) {
     console.error("Prayer Requests Retrieval Error:", error);

@@ -28,4 +28,7 @@ router.route("/:id")
 router.route("/:id/join")
   .post(connectGroupsController.joinConnectGroup);
 
+  router.route("/:id")
+  .patch(connectGroupsController.patchConnectGroup);
+
 module.exports = router;
