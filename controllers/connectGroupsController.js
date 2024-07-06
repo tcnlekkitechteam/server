@@ -3,39 +3,40 @@ const User = require("../models/user");
 const { isValidObjectId } = require('mongoose');
 
 const joinConnectGroup = async (req, res) => {
-  try {
-    const { _id: userId, name } = req.body;
-
-    if (!userId || !name) {
-      return res.status(400).json({ message: "userId and name are required" });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: `User with ID ${userId} not found.` });
-    }
-
-    let connectGroup = await ConnectGroup.findOne({ name });
-    if (!connectGroup) {
-      connectGroup = await ConnectGroup.create({
-        name,
-        connectGroups: [userId],
-      });
-    } else {
-      if (connectGroup.connectGroup.includes(userId)) {
-        return res.status(400).json({ message: "User is already in the ConnectGroup." });
-      } else {
-        connectGroup.connectGroup.push(userId);
-        await connectGroup.save();
+    try {
+      const { _id: userId, name } = req.body;
+  
+      if (!userId || !name) {
+        return res.status(400).json({ message: "userId and name are required" });
       }
+  
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: `User with ID ${userId} not found.` });
+      }
+  
+      let connectGroup = await ConnectGroup.findOne({ name });
+      if (!connectGroup) {
+        connectGroup = await ConnectGroup.create({
+          name,
+          connectGroups: [userId],
+        });
+      } else {
+        if (connectGroup.connectGroups.includes(userId)) {
+          return res.status(400).json({ message: "User is already in the ConnectGroup." });
+        } else {
+          connectGroup.connectGroups.push(userId);
+          await connectGroup.save();
+        }
+      }
+  
+      res.status(200).json({ message: "User joined ConnectGroup successfully.", connectGroup });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error." });
     }
-
-    res.status(200).json({ message: "User joined ConnectGroup successfully.", connectGroup });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error." });
-  }
-};
+  };
+  
 
 const getConnectGroups = async (req, res) => {
   try {
