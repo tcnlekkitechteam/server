@@ -1,5 +1,38 @@
 const Department = require("../models/DepartmentModel");
 
+// const joinDepartment = async (req, res) => {
+//   try {
+//     const { _id: userId, departmentId } = req.body;
+
+//     if (!userId || !departmentId) {
+//       return res.status(400).json({ message: "userId and departmentId are required" });
+//     }
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: `User with ID ${userId} not found.` });
+//     }
+
+//     const department = await Department.findById(departmentId);
+//     if (!department) {
+//       return res.status(404).json({ message: `Department with ID ${departmentId} not found.` });
+//     }
+
+//     if (department.users.includes(userId)) {
+//       return res.status(400).json({ message: "User is already a member of this department." });
+//     }
+
+//     department.users.push(userId);
+//     await department.save();
+
+//     return res.status(200).json({ message: "User joined department successfully.", department });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ message: "Internal server error." });
+//   }
+// };
+
+
 const getDepartments = async (req, res) => {
   try {
     const departments = await Department.find();
@@ -15,24 +48,33 @@ const getDepartments = async (req, res) => {
 
 const createDepartment = async (req, res) => {
   try {
-    if (!req?.body?.name || !req?.body?.description || !req?.body?.imgURL) {
-      return res.status(400).json({
-        message: "Department name, description and imgURL are required",
-      });
+    const { name, description, imgURL } = req.body;
+
+    if (!name || !description) {
+      return res.status(400).json({ message: "Name and description are required" });
     }
 
-    const result = await Department.create({
-      name: req.body.name,
-      description: req.body.description,
-      imgURL: req.body.imgURL,
+    const existingDepartment = await Department.findOne({ name });
+    if (existingDepartment) {
+      return res.status(400).json({ message: "Department with this name already exists" });
+    }
+
+    const newDepartment = new Department({
+      name,
+      description,
+      imgURL
     });
 
-    res.status(201).json(result);
+    await newDepartment.save();
+
+    return res.status(201).json({ message: "Department created successfully.", department: newDepartment });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error." });
+    console.error('Error:', err);
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
+
+
 
 const updateDepartment = async (req, res) => {
   try {
@@ -107,4 +149,5 @@ module.exports = {
   updateDepartment,
   deleteDepartment,
   getDepartment,
+  // joinDepartment, 
 };
