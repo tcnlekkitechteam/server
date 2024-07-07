@@ -5,35 +5,41 @@ const { default: mongoose } = require("mongoose");
 const { dropdownOptions } = require("../utils/constant");
 
 const joinDepartment = async (req, res) => {
-  const { userID, departmentID } = req.body;
-  let validDepartment = await Department.findById(
-    new mongoose.Types.ObjectId(departmentID)
-  );
+  try {
+    const { userId, departmentId } = req.body;
 
-  if (!userID)
-    res.status(400).json({ message: "Invalid or no user id detected!" });
-
-  if (validDepartment) {
-    try {
-      const user = await User.findOneAndUpdate(
-        { _id: userID },
-        {
-          department: {
-            name: validDepartment.name,
-            id: validDepartment._id,
-          },
-        }
-      );
-      res.status(200).json({
-        message: "Action successfull!",
-      });
-    } catch (e) {
-      res.status(400).json({ err: e });
+    if (!userId || !departmentId) {
+      return res.status(400).json({ message: "userId and departmentId are required" });
     }
-  } else {
-    res.status(404).json({ message: "Department not recognized" });
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: `User with ID ${userId} not found.` });
+    }
+
+    const department = await Department.findById(departmentId);
+    if (!department) {
+      return res.status(404).json({ message: `Department with ID ${departmentId} not found.` });
+    }
+
+    if (department.users && department.users.includes(userId)) {
+      return res.status(400).json({ message: "User is already a member of this department." });
+    }
+
+    if (!department.users) {
+      department.users = [];
+    }
+
+    department.users.push(userId);
+    await department.save();
+
+    return res.status(200).json({ message: "User joined department successfully.", department });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
+
 
 const joinConnectGroup = async (req, res) => {
   const { userID, ConnectGroupID } = req.body;

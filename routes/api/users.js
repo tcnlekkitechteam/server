@@ -1,10 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const usersController = require("../../controllers/usersController");
-const connectGroupsController = require("../../controllers/connectGroupsController")
-
+const connectGroupsController = require("../../controllers/connectGroupsController");
+const departmentsController = require("../../controllers/departmentsController");
 
 router.route("/join-department").post(usersController.joinDepartment);
+router.route("/create-department").post(departmentsController.createDepartment);
+router.route("/get-departments").get(departmentsController.getDepartments);
+router.route("/get-department").get(departmentsController.getDepartment);
 router.route("/join-connectGroup").post(connectGroupsController.joinConnectGroup);
 router.route("/create-connectGroup").post(connectGroupsController.createConnectGroup);
 router.route("/update-connectGroup").post(connectGroupsController.updateConnectGroup);
