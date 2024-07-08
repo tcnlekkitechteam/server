@@ -1,16 +1,24 @@
 const ConnectGroup = require("../models/ConnectGroupModel");
 const User = require("../models/user");
 const { isValidObjectId } = require('mongoose');
+const jwt = require("jsonwebtoken");
+const { getTokenFromHeader } = require("../utils/getTokenFromHeader");
 
 const joinConnectGroup = async (req, res) => {
-    try {
+
+  const token = getTokenFromHeader(req)
+   
+  try {
+    const {userId} = jwt.verify(token, process.env.JWT_SECRET);
+        
       const { name } = req.body;
       
       if (!name) {
         return res.status(400).json({ message: "Connect group name is required" });
       }
   
-      const userId = req.user?._id; // Ensure req.user is available
+    //   const userId = req.user?._id; // Ensure req.user is available
+    
       if (!userId) {
         return res.status(401).json({ message: "User authentication required" });
       }
