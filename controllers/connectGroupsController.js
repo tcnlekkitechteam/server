@@ -4,11 +4,13 @@ const { isValidObjectId } = require('mongoose');
 
 const joinConnectGroup = async (req, res) => {
     try {
-      const { _id: userId, name } = req.body;
-  
-      if (!userId || !name) {
-        return res.status(400).json({ message: "userId and name are required" });
+      const { name } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Connect group name is required" });
       }
+  
+      const userId = req.user._id; // Assuming user ID is available in req.user
   
       const user = await User.findById(userId);
       if (!user) {
@@ -36,6 +38,7 @@ const joinConnectGroup = async (req, res) => {
       res.status(500).json({ message: "Internal server error." });
     }
   };
+  
   
 
 const getConnectGroups = async (req, res) => {
