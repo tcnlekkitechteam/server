@@ -10,7 +10,10 @@ const joinConnectGroup = async (req, res) => {
         return res.status(400).json({ message: "Connect group name is required" });
       }
   
-      const userId = req.user._id; // Assuming user ID is available in req.user
+      const userId = req.user?._id; // Ensure req.user is available
+      if (!userId) {
+        return res.status(401).json({ message: "User authentication required" });
+      }
   
       const user = await User.findById(userId);
       if (!user) {
@@ -38,6 +41,9 @@ const joinConnectGroup = async (req, res) => {
       res.status(500).json({ message: "Internal server error." });
     }
   };
+  
+  module.exports = { joinConnectGroup };
+  
   
   
 
