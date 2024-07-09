@@ -5,20 +5,16 @@ const jwt = require("jsonwebtoken");
 const { getTokenFromHeader } = require("../utils/getTokenFromHeader");
 
 const joinConnectGroup = async (req, res) => {
-
-  const token = getTokenFromHeader(req)
-   
-  try {
-    const {userId} = jwt.verify(token, process.env.JWT_SECRET);
-        
+    const token = getTokenFromHeader(req);
+  
+    try {
+      const { userId } = jwt.verify(token, process.env.JWT_SECRET);
       const { name } = req.body;
-      
+  
       if (!name) {
         return res.status(400).json({ message: "Connect group name is required" });
       }
   
-    //   const userId = req.user?._id; // Ensure req.user is available
-    
       if (!userId) {
         return res.status(401).json({ message: "User authentication required" });
       }
@@ -43,16 +39,21 @@ const joinConnectGroup = async (req, res) => {
         }
       }
   
+      // Update user's document with connect group details
+      if (!user.connectGroups) {
+        user.connectGroups = [];
+      }
+      if (!user.connectGroups.some(group => group.id.toString() === connectGroup._id.toString())) {
+        user.connectGroups.push({ name: connectGroup.name, id: connectGroup._id });
+        await user.save();
+      }
+  
       res.status(200).json({ message: "User joined ConnectGroup successfully.", connectGroup });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Internal server error." });
     }
   };
-  
-  module.exports = { joinConnectGroup };
-  
-  
   
 
 const getConnectGroups = async (req, res) => {

@@ -19,7 +19,7 @@ const joinDepartment = async (req, res) => {
 
     const department = await Department.findById(departmentId);
     if (!department) {
-      return res.status(404).json({ message: `Department with ID ${departmentId} not found.` });
+      return res.status(404).json({ message: "Department does not exist.", department: [] });
     }
 
     if (department.users && department.users.includes(userId)) {
@@ -33,12 +33,21 @@ const joinDepartment = async (req, res) => {
     department.users.push(userId);
     await department.save();
 
+    // Update user's department details
+    user.department = {
+      name: department.name,
+      id: department._id,
+    };
+    await user.save();
+
     return res.status(200).json({ message: "User joined department successfully.", department });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+
+module.exports = { joinDepartment };
 
 
 const joinConnectGroup = async (req, res) => {
