@@ -91,10 +91,16 @@ const userSchema = new mongoose.Schema(
       name: String,
       id: ObjectId,
     },
-    connectGroup: {
-      name: String,
-      id: ObjectId,
-    },
+    connectGroups: [
+      {
+        name: String,
+        id: ObjectId,
+      },
+    ],
+    // connectGroup: {
+    //   name: String,
+    //   id: ObjectId,
+    // },
     howDidYouHearAboutUs: {
       type: String,
       trim: true,
