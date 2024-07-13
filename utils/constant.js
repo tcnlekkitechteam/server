@@ -29,6 +29,22 @@
     "Hospitality",
     "Others"
   ],
+  connectGroups: [
+    "Fin Connect",
+    "Ed Connect",
+    "Creatives Connect",
+    "Legal Connect",
+    "Real Estate Connect",
+    "Energy Connect",
+    "Management Connect",
+    "Tech n Comms Connect",
+    "Trade Connect",
+    "Hospitality Connect",
+    "Health Connect",
+    "Agri Connect",
+    "Gov Connect",
+    "Logistics Connect"
+  ],
   nextSteps: [
     "Be born Again",
     "Be baptized",
