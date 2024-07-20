@@ -74,6 +74,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       max: 9,
     },
+    noOfChildren: {
+      type: Number,
+      required: false,
+    },
     email: {
       type: String,
       trim: true,
@@ -87,10 +91,10 @@ const userSchema = new mongoose.Schema(
       required: false,
       max: 32,
     },
-    department: {
+    department: [{
       name: String,
       id: ObjectId,
-    },
+    }],
     connectGroups: [
       {
         name: String,
