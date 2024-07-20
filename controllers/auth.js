@@ -25,6 +25,7 @@ exports.signup = async (req, res) => {
       industry,
       gender,
       maritalStatus,
+      noOfChildren,
       password,
       department,
       consent,
@@ -61,6 +62,7 @@ exports.signup = async (req, res) => {
       industry,
       gender,
       maritalStatus,
+      noOfChildren,
       hashed_password,
       consent,
     });
@@ -249,6 +251,7 @@ exports.signin = async (req, res) => {
       department,
       gender,
       maritalStatus,
+      noOfChildren,
       role,
       roles,
     } = user;
@@ -270,6 +273,7 @@ exports.signin = async (req, res) => {
         department,
         gender,
         maritalStatus,
+        noOfChildren,
         role,
         verified: user.verified,
       },

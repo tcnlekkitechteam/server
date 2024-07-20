@@ -70,6 +70,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       max: 9,
     },
+    noOfChildren: {
+      type: Number,
+      trim: true,
+      required: false,
+    },
     email: {
       type: String,
       trim: true,
@@ -83,10 +88,10 @@ const userSchema = new mongoose.Schema(
       required: false,
       max: 32,
     },
-    department: {
+    department: [{
       name: String,
       id: ObjectId,
-    },
+    }],
     howDidYouHearAboutUs: {
       type: String,
       trim: true,
