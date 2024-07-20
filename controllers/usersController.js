@@ -26,18 +26,12 @@ const joinDepartment = async (req, res) => {
       return res.status(400).json({ message: "User is already a member of this department." });
     }
 
-    if (!department.users) {
-      department.users = [];
-    }
-
+    // Add user to the department's user list
     department.users.push(userId);
     await department.save();
 
-    // Update user's department details
-    user.department = {
-      name: department.name,
-      id: department._id,
-    };
+    // Add department to the user's department list
+    user.departments.push(departmentId);
     await user.save();
 
     return res.status(200).json({ message: "User joined department successfully.", department });
