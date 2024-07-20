@@ -76,7 +76,6 @@ const userSchema = new mongoose.Schema(
     },
     noOfChildren: {
       type: Number,
-      trim: true,
       required: false,
     },
     email: {
