@@ -87,10 +87,12 @@ const userSchema = new mongoose.Schema(
       required: false,
       max: 32,
     },
-    department: {
+    department: [{
       name: String,
       id: ObjectId,
-    },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+    }],
     connectGroups: [
       {
         name: String,
