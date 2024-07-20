@@ -74,6 +74,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       max: 9,
     },
+    noOfChildren: {
+      type: Number,
+      trim: true,
+      required: false,
+    },
     email: {
       type: String,
       trim: true,
@@ -90,19 +95,7 @@ const userSchema = new mongoose.Schema(
     department: [{
       name: String,
       id: ObjectId,
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Department",
     }],
-    connectGroups: [
-      {
-        name: String,
-        id: ObjectId,
-      },
-    ],
-    // connectGroup: {
-    //   name: String,
-    //   id: ObjectId,
-    // },
     howDidYouHearAboutUs: {
       type: String,
       trim: true,
