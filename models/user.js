@@ -56,7 +56,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       max: 15,
     },
-    area: {
+    residentialArea: {
       type: String,
       trim: true,
       required: false,
