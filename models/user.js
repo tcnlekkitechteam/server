@@ -91,10 +91,10 @@ const userSchema = new mongoose.Schema(
       required: false,
       max: 32,
     },
-    department: [{
+    department: {
       name: String,
       id: ObjectId,
-    }],
+    },
     howDidYouHearAboutUs: {
       type: String,
       trim: true,
