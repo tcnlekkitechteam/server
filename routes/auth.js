@@ -1,42 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const UserController = require('../controllers/auth');
-const { subscribeNewsletter } = require('../controllers/auth');
 const { requireAuth } = require('../controllers/auth');
-const EventsController = require('../controllers/eventsController');
-// const {getAllUsers} = require('../controllers/auth');
-const jwt = require('jsonwebtoken'); // Import jwt library
+const jwt = require('jsonwebtoken'); 
 const postmark = require('postmark');
 const User = require('../models/user');
-const { getAllUsers, filterUsers } = require('../controllers/auth');
-// const moment = require('moment'); // Import moment library
+const verifyJWT = require('../middlewares/verifyJWT');
+const ROLES_LIST = require('../config/roles_list')
+const verifyRoles = require('../middlewares/verifyRoles');
 
 // Create Postmark client
 const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
 // import controller 
-const { signup, accountActivation, signin, updateUser, forgotPassword, resetPassword, deleteUser, changePassword } = require('../controllers/auth');
+const EventsController = require('../controllers/eventsController');
+const UserController = require('../controllers/auth');
 
 // import validators
 const {userSignupValidator, userSigninValidator, userUpdateValidator,} = require('../Validators/auth');
 const {runValidation} = require('../Validators');
 
-router.post('/signup', userSignupValidator, runValidation, signup);
-router.post('/account-activation', accountActivation);
-router.post('/signin', userSigninValidator, runValidation, signin);
-router.put('/update-user/:userId', userUpdateValidator, runValidation, updateUser);
+router.post('/signup', userSignupValidator, runValidation, UserController.signup);
+router.post('/account-activation', UserController.accountActivation);
+router.post('/signin', userSigninValidator, runValidation, UserController.signin);
+router.put('/update-user/:userId', userUpdateValidator, runValidation, verifyJWT, verifyRoles(ROLES_LIST.Admin, ROLES_LIST.User), UserController.updateUser);
 // router.delete('/user/:userId', deleteUser);
-router.delete('/user/:userEmail', deleteUser);
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
-router.get('/users', getAllUsers);
-router.get('/users/filter', filterUsers);
-router.get('/users/count', UserController.countUsers);
-router.post('/subscribe-newsletter', subscribeNewsletter);
-router.post('/events', EventsController.createEvent);
-router.get('/events', EventsController.getAllEvents);
+router.delete('/user/:userEmail', verifyJWT, verifyRoles(ROLES_LIST.Admin), UserController.deleteUser);
+router.post('/forgot-password', UserController.forgotPassword);
+router.post('/reset-password', UserController.resetPassword);
+router.get('/users', verifyJWT, verifyRoles(ROLES_LIST.Admin), UserController.getAllUsers);
+router.get('/users/filter', verifyJWT, verifyRoles(ROLES_LIST.Admin), UserController.filterUsers);
+// router.get('/users/count', UserController.countUsers);
+router.post('/subscribe-newsletter', UserController.subscribeNewsletter);
+router.post('/events', verifyJWT, verifyRoles(ROLES_LIST.Admin), EventsController.createEvent);
+router.get('/events',  EventsController.getAllEvents);
 router.get('/events/categories', EventsController.getEventsByCategory);
-router.post('/change-password', requireAuth, changePassword);
+router.post('/change-password', verifyJWT, UserController.changePassword);
 router.post('/request-new-token', async (req, res) => {
     try {
         const { email } = req.body;

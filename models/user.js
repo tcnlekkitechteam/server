@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
-      enum: ["Male", "Female", "Other"],
+      enum: ["Male", "Female"],
     },
     consent: {
       type: Boolean,
@@ -163,7 +163,11 @@ const userSchema = new mongoose.Schema(
     salt: String,
     role: {
       type: String,
-      default: "subscriber",
+      default: "User",
+    },
+    verified: {
+      type: Boolean,
+      default: false,
     },
     refreshToken: String,
     resetPasswordLink: {
