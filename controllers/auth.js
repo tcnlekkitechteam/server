@@ -6,12 +6,12 @@ const postmark = require("postmark");
 const bcrypt = require("bcrypt");
 const Newsletter = require("../models/newsletter");
 // const moment = require('moment'); // Import moment library
-const { sendResetPasswordEmail } = require("../utils/email");
+const { sendResetPasswordEmail, sendActivationEmail } = require("../utils/email");
 const { getUserAuthPayload } = require("../utils/getUserAuthPayload");
 const { ObjectId } = require("mongodb");
 const { default: mongoose } = require("mongoose");
+const ROLES_LIST = require("../config/roles_list");
 
-const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
 exports.signup = async (req, res) => {
   try {
@@ -23,12 +23,12 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
-      areas,
+      residentArea,
       gender,
       maritalStatus,
       noOfChildren,
       password,
-      department,
+      departmentId,
       consentToReceiveUpdates,
       consent,
     } = req.body;
@@ -43,8 +43,8 @@ exports.signup = async (req, res) => {
 
     // Validate department if provided
     let validDepartment;
-    if (department) {
-      validDepartment = await Department.findById(department);
+    if (departmentId) {
+      validDepartment = await Department.findById(departmentId);
       if (!validDepartment) {
         return res.status(400).json({
           error: "Department not recognized.",
@@ -62,13 +62,14 @@ exports.signup = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
-      areas,
+      residentArea,
       gender,
       maritalStatus,
       noOfChildren,
       hashed_password,
       consentToReceiveUpdates,
       consent,
+      // role: ROLES_LIST.User,
     });
 
     if (validDepartment) {
@@ -77,6 +78,7 @@ exports.signup = async (req, res) => {
         id: validDepartment._id,
       };
     }
+
 
     // Save the user directly without email verification
     await user.save();
@@ -89,31 +91,7 @@ exports.signup = async (req, res) => {
     );
 
     // Send activation email
-    const emailData = {
-      From: process.env.EMAIL_FROM,
-      To: email,
-      Subject: "Account Activation Link",
-      HtmlBody: `
-              <h1>Welcome to the TCN Lekki Information Portal</h1>
-              <p>Hi ${user.firstName},<br>I am pleased to welcome you to the TCN Lekki Information Portal. It's a platform we have carefully designed to enhance your experience as a member of the Lekki campus of The Covenant Nation.
-              Kindly click on the link below to activate your account and complete your sign up process within 24 hours.<br>
-              ${process.env.CLIENT_URL}/activate-account?token=${token} <br>
-              Joining the TCN Lekki information Platform will give you access to regular updates and draw you into
-              an immersive church-life experience that will provide support for your spiritual growth.
-              I encourage you to take advantage of this platform by filling your correct information, verifying your
-              email where applicable and visiting this portal regularly to connect with the church community. We also
-               look forward to feedback on how we can improve church life at TCN Lekki.<br> Once again, welcome aboard.<br>
-               Grace is multiplied in your favor!<br>
-               Best regards,<br>
-               Pastor Tayo Osiyemi </p>
-              
-              <hr/>
-              <p>This email may contain sensitive information</p>
-              <p>${process.env.CLIENT_URL}</p>
-          `,
-    };
-
-    await client.sendEmail(emailData);
+    await sendActivationEmail(user, email, token);
 
     return res.json({
       message: `Email has been sent to ${email}. Follow the instructions to activate your account.`,
@@ -125,7 +103,6 @@ exports.signup = async (req, res) => {
     });
   }
 };
-
 
 exports.accountActivation = async (req, res) => {
   try {
@@ -179,28 +156,6 @@ exports.accountActivation = async (req, res) => {
   }
 };
 
-
-// Function to delete unactivated users after 7 days
-const deleteUnactivatedUsers = async () => {
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-  // Find unactivated users created more than 7 days ago
-  const unactivatedUsers = await User.find({
-    verified: false,
-    createdAt: { $lte: sevenDaysAgo },
-  });
-
-  // Delete unactivated users
-  for (const user of unactivatedUsers) {
-    await user.remove();
-    console.log(`Deleted unactivated user with email: ${user.email}`);
-  }
-};
-
-// Call the function periodically, for example, every day
-setInterval(deleteUnactivatedUsers, 24 * 60 * 60 * 1000); // 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
-
 // Method to signin user
 exports.signin = async (req, res) => {
   try {
@@ -228,16 +183,24 @@ exports.signin = async (req, res) => {
       });
     }
 
+    if (user.needsPasswordReset) {
+      return res.status(403).json({
+        message:
+          "You need to reset your password before you can access your account",
+        passwordResetRequired: true,
+      });
+    }
+
     // Generate a token for the authenticated user
     const accessToken = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, email: user.email, role: [user.role] },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     // Generate a refresh token for the authenticated user
     const refreshToken = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, email: user.email, role: [user.role] },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "1d" }
     );
@@ -263,22 +226,22 @@ exports.signin = async (req, res) => {
       birthDay,
       ageGroup,
       industry,
-      areas,
+      residentialArea,
       department,
       gender,
       maritalStatus,
       noOfChildren,
       role,
-      roles,
+      verified,
     } = user;
 
     // To return token, user details, and verification status in response
     return res.json({
       accessToken,
-      roles: Object.values(roles).filter(Boolean),
+      // roles: Object.values(roles).filter(Boolean),
       // refreshToken, // Sending the refresh token alongside the access token
       user: {
-        _id,
+        id: _id,
         surName,
         firstName,
         email,
@@ -286,13 +249,13 @@ exports.signin = async (req, res) => {
         birthDay,
         ageGroup,
         industry,
-        areas,
+        residentialArea,
         department,
         gender,
         maritalStatus,
         noOfChildren,
         role,
-        verified: user.verified,
+        verified,
       },
     });
   } catch (err) {
@@ -362,7 +325,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Send reset password email
-    sendResetPasswordEmail(user.email, resetToken);
+    await sendResetPasswordEmail(user.email, resetToken);
 
     // Return success response
     res.json({ message: "Password reset email sent successfully" });
@@ -397,7 +360,7 @@ exports.resetPassword = async (req, res) => {
 
     // Set new password and reset token details
     user.password = newPassword;
-    user.hashed_password = hashed_password
+    user.hashed_password = hashed_password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 
@@ -478,7 +441,8 @@ exports.countUsers = async (req, res) => {
 // Function to filter users
 exports.filterUsers = async (req, res) => {
   try {
-    const { maritalStatus, industry, gender, ageGroup, department, areas } = req.query;
+    const { maritalStatus, industry, gender, ageGroup, department, areas } =
+      req.query;
     const filter = {};
 
     // Add filters if they are provided
@@ -501,7 +465,7 @@ exports.filterUsers = async (req, res) => {
     if (ageGroup) {
       filter.ageGroup = ageGroup;
     }
-    
+
     if (areas) {
       filter.areas = areas;
     }
@@ -573,18 +537,46 @@ exports.requireAuth = async (req, res, next) => {
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const userId = req.user._id;
+    const userId = req.user;
 
-    // Find the user
     const user = await User.findById(userId);
 
-    // Change the password
-    await user.changePassword(currentPassword, newPassword);
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Send success response
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.hashed_password
+    );
+    if (!isPasswordValid)
+      return res.status(400).json({ error: "Current password is incorrect" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.hashed_password = hashedPassword;
+    await user.save();
+
     res.json({ message: "Password changed successfully" });
   } catch (error) {
     console.error("Change Password Error:", error);
     res.status(400).json({ error: error.message });
   }
 };
+
+// exports.changePassword = async (req, res) => {
+//   try {
+//     const { currentPassword, newPassword } = req.body;
+//     const userId = req.user._id;
+
+//     // Find the user
+//     const user = await User.findById(userId);
+
+//     // Change the password
+//     await user.changePassword(currentPassword, newPassword);
+
+//     // Send success response
+//     res.json({ message: "Password changed successfully" });
+//   } catch (error) {
+//     console.error("Change Password Error:", error);
+//     res.status(400).json({ error: error.message });
+//   }
+// };

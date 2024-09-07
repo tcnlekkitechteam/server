@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     roles: {
       User: {
         type: Number,
-        default: 5150, //TODO: change default role back to admin 2001
+        default: 2001, 
       },
       Editor: Number,
       Admin: Number,
@@ -125,14 +125,19 @@ const userSchema = new mongoose.Schema(
     },
     salt: String,
     role: {
-      type: String,
-      default: "subscriber",
+      type: Number,
+      default: 2001,
     },
     refreshToken: String,
     resetPasswordLink: {
       type: String,
       default: "",
     },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    needsPasswordReset: { type: Boolean, default: false },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
   },

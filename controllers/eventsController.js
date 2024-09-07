@@ -1,4 +1,5 @@
 const Event = require('../models/event');
+const { Ifilter} = require("../utils/filter")
 
 exports.createEvent = async (req, res) => {
   try {
@@ -12,95 +13,160 @@ exports.createEvent = async (req, res) => {
   }
 };
 
+
 exports.getAllEvents = async (req, res) => {
   try {
-    let { page, limit } = req.query;
+    const allowedFields = {
+      eventName: { type: "string" },
+      createdAt: { type: "date", isRange: true, isSingleDate: true },
+    };
 
-    // Default values if page or limit are not provided
+    const { error, filter, message } = Ifilter(req.query, allowedFields);
+
+    if (error) return res.status(422).json({ message });
+
+    let { page, limit } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
-    // Calculate the number of documents to skip
     const skip = (page - 1) * limit;
 
-    // Query events with pagination
-    const events = await Event.find()
-      .skip(skip)
-      .limit(limit);
+    const events = await Event.find(filter).skip(skip).limit(limit);
 
-    // Check if events array is empty and return an empty array if so
-    if (events.length === 0) {
-      return res.json({ events: [], page, limit });
-    }
-
-    res.json({ events, page, limit });
+    res.status(200).json({
+      page,
+      limit,
+      totalEvents: await Event.countDocuments(filter),
+      events,
+    });
   } catch (error) {
-    console.error('GET ALL EVENTS ERROR', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("GET ALL EVENTS ERROR", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-exports.getEventsByCategory = async (req, res) => {
+
+// exports.getAllEvents = async (req, res) => {
+//   try {
+//     let { page, limit } = req.query;
+
+//     // Default values if page or limit are not provided
+//     page = parseInt(page) || 1;
+//     limit = parseInt(limit) || 10;
+
+//     // Calculate the number of documents to skip
+//     const skip = (page - 1) * limit;
+
+//     // Query events with pagination
+//     const events = await Event.find()
+//       .skip(skip)
+//       .limit(limit);
+
+//     // Check if events array is empty and return an empty array if so
+//     if (events.length === 0) {
+//       return res.json({ events: [], page, limit });
+//     }
+
+//     res.json({ events, page, limit });
+//   } catch (error) {
+//     console.error('GET ALL EVENTS ERROR', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// };
+
+// exports.getEventsByCategory = async (req, res) => {
+//   try {
+//     const currentDate = new Date();
+    
+//     // Query upcoming events (events with date greater than or equal to current date)
+//     const upcomingEvents = await Event.find({ date: { $gte: currentDate } });
+//     console.log('upcoming found')
+
+//     // Query recent events (events with date less than current date)
+//     const recentEvents = await Event.find({ date: { $lt: currentDate } });
+ 
+//     // Check if both arrays are empty and return empty arrays if so
+//     if (upcomingEvents.length === 0 && recentEvents.length === 0) {
+//       return res.json({ upcomingEvents: [], recentEvents: [] });
+//     }
+
+//     res.json({ upcomingEvents, recentEvents });
+//   } catch (error) {
+//     console.error('GET EVENTS BY CATEGORY ERROR', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// };
+
+// exports.getUpcomingEvents = async (req, res) => {
+//   try {
+//     const currentDate = new Date();
+    
+//     // Query upcoming events (events with date greater than or equal to current date)
+//     const upcomingEvents = await Event.find({ date: { $gte: currentDate } });
+//     console.log('upcoming found')
+    
+//     // Check if arrays is empty and return empty arrays if so
+//     if (upcomingEvents.length === 0) {
+//       return res.json({ upcomingEvents: []});
+//     }
+
+//     res.json({ upcomingEvents});
+//   } catch (error) {
+//     console.error('GET UPCOMING EVENTS ERROR', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// };
+
+// exports.getRecentEvents = async (req, res) => {
+//   try {
+//     const currentDate = new Date();
+    
+//     // Query recent events (events with date less than current date)
+//     const recentEvents = await Event.find({ date: { $lt: currentDate } });
+ 
+//     // Check if both arrays are empty and return empty arrays if so
+//     if (recentEvents.length === 0) {
+//       return res.json({ recentEvents: [] });
+//     }
+
+//     res.json({ recentEvents });
+//   } catch (error) {
+//     console.error('GET RECENT EVENTS ERROR', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// };
+
+
+exports.getEvents = async (req, res) => {
   try {
     const currentDate = new Date();
-    
-    // Query upcoming events (events with date greater than or equal to current date)
-    const upcomingEvents = await Event.find({ date: { $gte: currentDate } });
-    console.log('upcoming found')
 
+    // Query upcoming events (events with date greater than or equal to current date)
+    const upcomingEvents = await Event.find({
+      date: { $gte: currentDate },
+    }).sort({ date: 1 });
+    
     // Query recent events (events with date less than current date)
-    const recentEvents = await Event.find({ date: { $lt: currentDate } });
- 
-    // Check if both arrays are empty and return empty arrays if so
+    const recentEvents = await Event.find({ date: { $lt: currentDate } }).sort({
+      date: -1,
+    });
+
     if (upcomingEvents.length === 0 && recentEvents.length === 0) {
       return res.json({ upcomingEvents: [], recentEvents: [] });
     }
 
-    res.json({ upcomingEvents, recentEvents });
+    res.status(200).json({
+      totalUpcomingEvents: upcomingEvents.length,
+      totalRecentEvents: recentEvents.length,
+      upcomingEvents,
+      recentEvents,
+    });
   } catch (error) {
-    console.error('GET EVENTS BY CATEGORY ERROR', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("GET EVENTS BY CATEGORY ERROR", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-exports.getUpcomingEvents = async (req, res) => {
-  try {
-    const currentDate = new Date();
-    
-    // Query upcoming events (events with date greater than or equal to current date)
-    const upcomingEvents = await Event.find({ date: { $gte: currentDate } });
-    console.log('upcoming found')
-    
-    // Check if arrays is empty and return empty arrays if so
-    if (upcomingEvents.length === 0) {
-      return res.json({ upcomingEvents: []});
-    }
-
-    res.json({ upcomingEvents});
-  } catch (error) {
-    console.error('GET UPCOMING EVENTS ERROR', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-exports.getRecentEvents = async (req, res) => {
-  try {
-    const currentDate = new Date();
-    
-    // Query recent events (events with date less than current date)
-    const recentEvents = await Event.find({ date: { $lt: currentDate } });
- 
-    // Check if both arrays are empty and return empty arrays if so
-    if (recentEvents.length === 0) {
-      return res.json({ recentEvents: [] });
-    }
-
-    res.json({ recentEvents });
-  } catch (error) {
-    console.error('GET RECENT EVENTS ERROR', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
 
 exports.getEventsById = async (req, res) => {
   try {
@@ -167,43 +233,73 @@ exports.DeleteEventsById = async (req, res) => {
 };
 
 exports.updateEvent = async (req, res) => {
-  if (!req?.params?.id) {
-    return res.status(400).json({ message: "Event ID is required." });
-  }
+  try {
+    const allowedFields = {
+      eventName: { type: "string" },
+      date: { type: "date" },
+      time: { type: "string" },
+      registrationLink: { type: "string" },
+      volunteerLink: {type: "string"},
+      image: { type: "string" },
+    };
+    const { error, filter, message } = Ifilter(req.body, allowedFields);
 
-  const event = await Event.findOne({ _id: req.params.id }).exec();
-  if (!event) {
-    return res
-      .status(204)
-      .json({ message: `No event matches ID ${req.body.id}.` });
-  }
-  if (req.body?.eventName) event.eventName = req.body.eventName;
-  if (req.body?.date) event.date = req.body.date;
-  if (req.body?.time) event.time = req.body.time;
-  if (req.body?.registrationLink) event.registrationLink = req.body.registrationLink;
-  if (req.body?.image) event.image = req.body.image;
+    if (error) return res.status(422).json({ message });
 
-  const result = await event.updateOne(event);
-  res.json(result);
+    const event = await Event.findByIdAndUpdate(
+      req.params.id,
+      filter,
+      { new: true },
+      { runValidation: true }
+    );
+
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    res.status(201).json({ message: "Event updated successfully", event });
+  } catch (error) {
+    console.error("ERROR UPDATING AN EVENT", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
-exports.registerEvent = async (req, res) => {
-  try {
-    if (!req?.params?.id) {
-      return res.status(400).json({ message: "Event ID required." });
-    }
+// exports.updateEvent = async (req, res) => {
+//   if (!req?.params?.id) {
+//     return res.status(400).json({ message: "Event ID is required." });
+//   }
 
-    const event = await Event.findOne({ _id: req.params.id }).exec();
-    if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
-    }
+//   const event = await Event.findOne({ _id: req.params.id }).exec();
+//   if (!event) {
+//     return res
+//       .status(204)
+//       .json({ message: `No event matches ID ${req.body.id}.` });
+//   }
+//   if (req.body?.eventName) event.eventName = req.body.eventName;
+//   if (req.body?.date) event.date = req.body.date;
+//   if (req.body?.time) event.time = req.body.time;
+//   if (req.body?.registrationLink) event.registrationLink = req.body.registrationLink;
+//   if (req.body?.image) event.image = req.body.image;
 
-    res.status(200).json({ registrationLink: event.registrationLink });
-  } catch (err) {
-    console.error('Error registering for event:', err);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-}
+//   const result = await event.updateOne(event);
+//   res.json(result);
+// };
+
+// exports.registerEvent = async (req, res) => {
+//   try {
+//     if (!req?.params?.id) {
+//       return res.status(400).json({ message: "Event ID required." });
+//     }
+
+//     const event = await Event.findOne({ _id: req.params.id }).exec();
+//     if (!event) {
+//       return res.status(404).json({ message: 'Event not found' });
+//     }
+
+//     res.status(200).json({ registrationLink: event.registrationLink });
+//   } catch (err) {
+//     console.error('Error registering for event:', err);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// }
 
 exports.getRegistrationLink = async (req, res) => {
   try {
