@@ -1,3 +1,4 @@
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0' // For sending email on localhost
 require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
@@ -9,10 +10,11 @@ const departmentRoutes = require("./routes/api/departments.js");
 const connectGroupRoutes = require("./routes/api/connectGroups.js");
 const usersRoutes = require("./routes/api/users.js");
 const eventRoutes = require("./routes/api/eventRouter")
+const feedbackRoutes = require("./routes/api/feedbackRoutes.js")
+const prayerRequestRoutes = require("./routes/api/prayerRequestRoutes.js");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middlewares/errorHandler");
-const Feedback = require("./models/feedback.model.js");
-const PrayerRequest = require("./models/prayerRequest.model.js"); // Import the PrayerRequest model
+const User = require('./models/user.js')
 const moment = require("moment");
 const app = express();
 const port = process.env.PORT || 8000;
@@ -47,50 +49,53 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api", authRoutes);
+app.use("/api", feedbackRoutes )
+app.use("/api", prayerRequestRoutes)
 app.use("/api/users", usersRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/connectGroups", connectGroupRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/refresh", require("./routes/refresh"));
 app.use("/api/logout", require("./routes/logout"));
+
 // app.use('/api', departmentRoutes);
 
 // Feedback endpoint
-app.post("/feedback", async (req, res) => {
-  try {
-    const { name, email, message } = req.body;
+// app.post("/feedback", async (req, res) => {
+//   try {
+//     const { name, email, message } = req.body;
 
-    // Validation: Ensure required fields are provided
-    if (!name || !email || !message) {
-      return res
-        .status(400)
-        .json({ error: "Name, email, and message are required fields" });
-    }
+//     // Validation: Ensure required fields are provided
+//     if (!name || !email || !message) {
+//       return res
+//         .status(400)
+//         .json({ error: "Name, email, and message are required fields" });
+//     }
 
-    // Check if a feedback with the given email already exists
-    const existingFeedback = await Feedback.findOne({ email });
+//     // Check if a feedback with the given email already exists
+//     const existingFeedback = await Feedback.findOne({ email });
 
-    if (existingFeedback) {
-      return res
-        .status(400)
-        .json({ error: "Feedback with this email already exists" });
-    }
+//     if (existingFeedback) {
+//       return res
+//         .status(400)
+//         .json({ error: "Feedback with this email already exists" });
+//     }
 
-    // Save feedback to MongoDB
-    const newFeedback = new Feedback({
-      name,
-      email,
-      message,
-    });
-    await newFeedback.save();
+//     // Save feedback to MongoDB
+//     const newFeedback = new Feedback({
+//       name,
+//       email,
+//       message,
+//     });
+//     await newFeedback.save();
 
-    // Send a response
-    return res.status(200).json({ message: "Feedback received successfully" });
-  } catch (error) {
-    console.error("Feedback Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+//     // Send a response
+//     return res.status(200).json({ message: "Feedback received successfully" });
+//   } catch (error) {
+//     console.error("Feedback Error:", error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
 
 // Health check route
 app.get("/health-check", async (req, res) => {
@@ -106,58 +111,78 @@ app.get("/get-coreTeam-link", (req, res) => {
 });
 
 // Endpoint to accept prayer requests
-app.post("/api/prayer-requests", async (req, res) => {
-  try {
-    const { name, request } = req.body;
+// app.post("/api/prayer-requests", async (req, res) => {
+//   try {
+//     const { name, request } = req.body;
 
-    // Validation: Ensure required fields are provided
-    if (!request) {
-      return res.status(400).json({
-        error: "Request is a required field",
-      });
-    }
+//     // Validation: Ensure required fields are provided
+//     if (!request) {
+//       return res.status(400).json({
+//         error: "Request is a required field",
+//       });
+//     }
 
-    // Check if user has already submitted a prayer request in the last 24 hours
-    const yesterday = moment().subtract(1, 'days');
-    const existingRequest = await PrayerRequest.findOne({
-      name: name || "Anonymous",
-      createdAt: { $gte: yesterday.toDate() }
-    });
+//     // Check if user has already submitted a prayer request in the last 24 hours
+//     const yesterday = moment().subtract(1, 'days');
+//     const existingRequest = await PrayerRequest.findOne({
+//       name: name || "Anonymous",
+//       createdAt: { $gte: yesterday.toDate() }
+//     });
 
-    if (existingRequest) {
-      return res.status(400).json({
-        error: `${name || "Anonymous"}, you have already submitted a prayer request today. Please try again tomorrow.`
-      });
-    }
+//     if (existingRequest) {
+//       return res.status(400).json({
+//         error: `${name || "Anonymous"}, you have already submitted a prayer request today. Please try again tomorrow.`
+//       });
+//     }
 
-    // Save prayer request to MongoDB
-    const newPrayerRequest = new PrayerRequest({
-      name: name || "Anonymous",
-      request,
-    });
-    await newPrayerRequest.save();
+//     // Save prayer request to MongoDB
+//     const newPrayerRequest = new PrayerRequest({
+//       name: name || "Anonymous",
+//       request,
+//     });
+//     await newPrayerRequest.save();
 
-    // Send a response
-    return res.status(201).json({ message: `${name || "Anonymous"}, your prayer request was submitted successfully` });
-  } catch (error) {
-    console.error("Prayer Request Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+//     // Send a response
+//     return res.status(201).json({ message: `${name || "Anonymous"}, your prayer request was submitted successfully` });
+//   } catch (error) {
+//     console.error("Prayer Request Error:", error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
 
 // Endpoint to retrieve prayer requests
-app.get("/api/prayer-requests", async (req, res) => {
-  try {
-    const prayerRequests = await PrayerRequest.find();
+// app.get("/api/prayer-requests", async (req, res) => {
+//   try {
+//     const prayerRequests = await PrayerRequest.find();
 
-    // Send the list of prayer requests as a JSON response
-    return res.status(200).json(prayerRequests);
-  } catch (error) {
-    console.error("Prayer Requests Retrieval Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+//     // Send the list of prayer requests as a JSON response
+//     return res.status(200).json(prayerRequests);
+//   } catch (error) {
+//     console.error("Prayer Requests Retrieval Error:", error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
+// Function to delete unactivated users after 7 days
+const deleteUnactivatedUsers = async () => {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  // Find unactivated users created more than 7 days ago
+  const unactivatedUsers = await User.find({
+    verified: false,
+    createdAt: { $lte: sevenDaysAgo },
+  });
+
+  // Delete unactivated users
+  for (const user of unactivatedUsers) {
+    await user.remove();
+    console.log(`Deleted unactivated user with email: ${user.email}`);
   }
-});
+};
 
+// Call the function periodically, for example, every day
+setInterval(deleteUnactivatedUsers, 24 * 60 * 60 * 1000); // 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
 
 // Error handling middleware
 app.use(errorHandler);

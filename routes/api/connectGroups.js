@@ -3,32 +3,43 @@ const router = express.Router();
 const connectGroupsController = require("../../controllers/connectGroupsController");
 const ROLES_LIST = require("../../config/roles_list");
 const verifyRoles = require("../../middlewares/verifyRoles");
+const verifyJWT = require("../../middlewares/verifyJWT");
 
 // Route for listing all connect groups and creating a new connect group
 router.route("/")
   .get(connectGroupsController.getConnectGroups)
   .post(
-    verifyRoles([ROLES_LIST.Admin, ROLES_LIST.Editor]),
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor),
     connectGroupsController.createConnectGroup
   );
 
 // Route for specific connect group by ID
 router.route("/:id")
-  .get(connectGroupsController.getConnectGroup)
+  .get(
+    verifyJWT, 
+    connectGroupsController.getConnectGroup)
   .put(
-    verifyRoles([ROLES_LIST.Admin, ROLES_LIST.Editor]),
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor),
     connectGroupsController.updateConnectGroup
   )
   .delete(
-    verifyRoles([ROLES_LIST.Admin]),
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin),
     connectGroupsController.deleteConnectGroup
   );
 
 // Route for joining a connect group by ID
 router.route("/:id/join")
-  .post(connectGroupsController.joinConnectGroup);
+  .post(
+    verifyJWT, 
+    connectGroupsController.joinConnectGroup);
 
   router.route("/:id")
-  .patch(connectGroupsController.patchConnectGroup);
+  .patch(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Editor),
+    connectGroupsController.patchConnectGroup);
 
 module.exports = router;
